@@ -67,9 +67,13 @@ public partial class App : Application
                 chat.Left = _list!.Left - chat.Width - 12;
                 chat.Top = _list.Top;
                 var page = e.Args.FirstOrDefault(a => a.StartsWith("--page="))?[7..] ?? "look";
-                ShowSettings(page);
-                _settings!.Left = chat.Left - 120;
-                _settings.Top = chat.Top + chat.Height - 120;
+                if (page == "none") { chat.Height = 720; chat.Width = 520; chat.Left = _list.Left - chat.Width - 12; }
+                else
+                {
+                    ShowSettings(page);
+                    _settings!.Left = chat.Left - 120;
+                    _settings.Top = chat.Top + chat.Height - 120;
+                }
             }
         }
         else if (Cfg.HasApi) Tg.Start(Cfg);

@@ -58,7 +58,10 @@ public static class Demo
         Tg.Chats[12].Muted = true;
 
         // Alina writes, deletes it and edits an older message: shows the archive keeping both.
+        After(1, () => { var m = Msg(2, 2, "", Now); m.Content = DemoRich(); Deliver(m); });
+        After(1.5, () => { var m = Msg(2, 2, "", Now); m.Content = DemoFormatted(); Deliver(m); });
         After(2, () => { var m = Msg(2, 2, "", Now); m.Content = DemoPhoto(); Deliver(m); });
+        After(3, () => { var m = Msg(2, 2, "", Now); m.Content = DemoStickerMessage(); Deliver(m); });
         After(4, () => Incoming(2, 2, "Ой, это не тебе было 🙈"));
         After(8, () =>
         {
@@ -166,6 +169,113 @@ public static class Demo
             Photo = new TdApi.Photo { Sizes = [new TdApi.PhotoSize { Type = "x", Photo = file, Width = w, Height = h }] },
         };
     }
+
+    // A bouncing, winking smiley drawn by hand as Lottie: shows animated stickers and custom emoji without Telegram.
+    const string SmileyLottie = """
+    {"v":"5.7.4","fr":60,"ip":0,"op":120,"w":512,"h":512,"layers":[{"ty":4,"ind":1,"ip":0,"op":120,"st":0,
+     "ks":{"o":{"a":0,"k":100},"a":{"a":0,"k":[0,0,0]},"s":{"a":0,"k":[100,100,100]},
+      "r":{"a":1,"k":[{"t":0,"s":[-12],"i":{"x":[0.5],"y":[1]},"o":{"x":[0.5],"y":[0]}},{"t":60,"s":[12],"i":{"x":[0.5],"y":[1]},"o":{"x":[0.5],"y":[0]}},{"t":120,"s":[-12]}]},
+      "p":{"a":1,"k":[{"t":0,"s":[256,290,0],"i":{"x":0.5,"y":1},"o":{"x":0.5,"y":0}},{"t":30,"s":[256,222,0],"i":{"x":0.5,"y":1},"o":{"x":0.5,"y":0}},{"t":60,"s":[256,290,0],"i":{"x":0.5,"y":1},"o":{"x":0.5,"y":0}},{"t":90,"s":[256,222,0],"i":{"x":0.5,"y":1},"o":{"x":0.5,"y":0}},{"t":120,"s":[256,290,0]}]}},
+     "shapes":[
+      {"ty":"gr","it":[
+        {"ty":"sh","ks":{"a":0,"k":{"c":false,"v":[[-90,40],[90,40]],"i":[[0,0],[-50,70]],"o":[[50,70],[0,0]]}}},
+        {"ty":"st","c":{"a":0,"k":[0.45,0.25,0.05,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":20},"lc":2,"lj":2},
+        {"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]},
+      {"ty":"gr","it":[
+        {"ty":"el","p":{"a":0,"k":[-60,-50]},"s":{"a":0,"k":[44,60]}},
+        {"ty":"el","p":{"a":0,"k":[60,-50]},"s":{"a":1,"k":[{"t":0,"s":[44,60],"i":{"x":[0.5,0.5],"y":[1,1]},"o":{"x":[0.5,0.5],"y":[0,0]}},{"t":70,"s":[44,60],"i":{"x":[0.5,0.5],"y":[1,1]},"o":{"x":[0.5,0.5],"y":[0,0]}},{"t":80,"s":[50,6],"i":{"x":[0.5,0.5],"y":[1,1]},"o":{"x":[0.5,0.5],"y":[0,0]}},{"t":90,"s":[44,60]}]}},
+        {"ty":"fl","c":{"a":0,"k":[0.35,0.2,0.05,1]},"o":{"a":0,"k":100}},
+        {"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]},
+      {"ty":"gr","it":[
+        {"ty":"el","p":{"a":0,"k":[-55,-85]},"s":{"a":0,"k":[110,60]}},
+        {"ty":"fl","c":{"a":0,"k":[1,1,0.85,1]},"o":{"a":0,"k":55}},
+        {"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":-25},"o":{"a":0,"k":100}}]},
+      {"ty":"gr","it":[
+        {"ty":"el","p":{"a":0,"k":[0,0]},"s":{"a":0,"k":[330,330]}},
+        {"ty":"gf","o":{"a":0,"k":100},"r":1,"t":2,"s":{"a":0,"k":[-60,-90]},"e":{"a":0,"k":[120,170]},"h":{"a":0,"k":0},"a":{"a":0,"k":0},
+         "g":{"p":2,"k":{"a":0,"k":[0,1,0.93,0.45,1,0.98,0.62,0.1]}}},
+        {"ty":"st","c":{"a":0,"k":[0.8,0.45,0.05,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":8},"lc":2,"lj":2},
+        {"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100}}]}
+     ]}]}
+    """;
+
+    static TdApi.File DemoTgs()
+    {
+        var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "aurora-demo-sticker.tgs");
+        using (var fs = System.IO.File.Create(path))
+        using (var gz = new System.IO.Compression.GZipStream(fs, System.IO.Compression.CompressionLevel.Optimal))
+        using (var w = new System.IO.StreamWriter(gz))
+            w.Write(SmileyLottie);
+        return new TdApi.File { Id = 78, Local = new TdApi.LocalFile { Path = path, IsDownloadingCompleted = true } };
+    }
+
+    static TdApi.Sticker DemoSticker(long customEmojiId = 0) => new()
+    {
+        Id = 5000 + customEmojiId,
+        Width = 512,
+        Height = 512,
+        Emoji = "😊",
+        Format = new TdApi.StickerFormat.StickerFormatTgs(),
+        FullType = customEmojiId != 0
+            ? new TdApi.StickerFullType.StickerFullTypeCustomEmoji { CustomEmojiId = customEmojiId }
+            : new TdApi.StickerFullType.StickerFullTypeRegular(),
+        Sticker_ = DemoTgs(),
+    };
+
+    public static TdApi.Sticker? CustomEmoji(long id) => DemoSticker(id);
+
+    static TdApi.MessageContent DemoStickerMessage() => new TdApi.MessageContent.MessageSticker { Sticker = DemoSticker() };
+
+    static TdApi.MessageContent DemoFormatted()
+    {
+        const string text = "Смотри, кастомные эмодзи 😊 теперь живые, а тут спойлер: завтра тусим";
+        var emoji = text.IndexOf("😊", StringComparison.Ordinal);
+        var spoiler = text.IndexOf("завтра", StringComparison.Ordinal);
+        return new TdApi.MessageContent.MessageText
+        {
+            Text = new TdApi.FormattedText
+            {
+                Text = text,
+                Entities =
+                [
+                    new TdApi.TextEntity { Offset = 7, Length = 17, Type = new TdApi.TextEntityType.TextEntityTypeBold() },
+                    new TdApi.TextEntity { Offset = emoji, Length = 2, Type = new TdApi.TextEntityType.TextEntityTypeCustomEmoji { CustomEmojiId = 1 } },
+                    new TdApi.TextEntity { Offset = spoiler, Length = text.Length - spoiler, Type = new TdApi.TextEntityType.TextEntityTypeSpoiler() },
+                ],
+            },
+        };
+    }
+
+    static TdApi.RichText P(string s) => new TdApi.RichText.RichTextPlain { Text = s };
+
+    static TdApi.MessageContent DemoRich() => new TdApi.MessageContent.MessageRichMessage
+    {
+        Message = new TdApi.RichMessage
+        {
+            IsFull = true,
+            Blocks =
+            [
+                new TdApi.PageBlock.PageBlockHeader { Header = P("Планы на субботу") },
+                new TdApi.PageBlock.PageBlockParagraph
+                {
+                    Text = new TdApi.RichText.RichTexts
+                    {
+                        Texts = [P("Собираемся у Димы в "), new TdApi.RichText.RichTextBold { Text = P("16:00") }, P(", берём "),
+                                 new TdApi.RichText.RichTextItalic { Text = P("старые диски") }, P(".")],
+                    },
+                },
+                new TdApi.PageBlock.PageBlockList
+                {
+                    Items =
+                    [
+                        new TdApi.PageBlockListItem { HasCheckbox = true, IsChecked = true, Blocks = [new TdApi.PageBlock.PageBlockParagraph { Text = P("Пицца") }] },
+                        new TdApi.PageBlockListItem { HasCheckbox = true, Blocks = [new TdApi.PageBlock.PageBlockParagraph { Text = P("Колонки") }] },
+                    ],
+                },
+                new TdApi.PageBlock.PageBlockPullQuote { Text = P("Кто опоздает, тот ставит музыку"), Credit = P("Дима") },
+            ],
+        },
+    };
 
     public static void SendContent(long chatId, TdApi.MessageContent content)
     {

@@ -28,7 +28,6 @@ public partial class ChatWindow : Window
     bool _loadingOlder, _reachedStart;
     DateTime _lastTypingSent;
 
-    static readonly Regex Url = new(@"(https?://|www\.|t\.me/)[^\s<>""]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     // Message colors come from the skin: dark skins need light names and text.
     Brush Res(string key) => (Brush)FindResource(key);
     Brush Mine => Res("MineInk");
@@ -214,15 +213,24 @@ public partial class ChatWindow : Window
             p.Inlines.Add(StickerInline(st.Sticker));
             return p;
         }
+        if (!deleted && m.Content is TdApi.MessageContent.MessageRichMessage rich)
+        {
+            MessageText.Rich(p.Inlines, rich.Message, PhotoInline);
+            if (!rich.Message.IsFull) p.Inlines.Add(ReadMore(m));
+            return p;
+        }
+        TdApi.FormattedText? ft = null;
         if (!deleted && m.Content is TdApi.MessageContent.MessagePhoto ph)
         {
             p.Inlines.Add(PhotoInline(ph.Photo));
-            body = ph.Caption?.Text ?? "";
-            if (body.Length == 0) return p;
+            ft = ph.Caption;
+            if (string.IsNullOrEmpty(ft?.Text)) return p;
             p.Inlines.Add(new LineBreak());
         }
+        else if (!deleted && m.Content is TdApi.MessageContent.MessageText txt) ft = txt.Text;
         var start = p.Inlines.Count;
-        AddWithLinks(p, body);
+        if (ft != null) MessageText.Formatted(p.Inlines, ft);
+        else MessageText.Plain(p.Inlines, body);
         if (deleted)
             foreach (var i in p.Inlines.Skip(start)) i.Foreground = DeletedInk;
         return p;
@@ -262,31 +270,31 @@ public partial class ChatWindow : Window
         return new InlineUIContainer(frame) { BaselineAlignment = BaselineAlignment.Bottom };
     }
 
-    Inline StickerInline(TdApi.Sticker s)
+    static Inline StickerInline(TdApi.Sticker s)
     {
         var (w, h) = Fit(s.Width, s.Height, 140, 140);
-        var grid = new Grid { Width = w, Height = h, ToolTip = "Стикер " + s.Emoji, Background = Brushes.Transparent };
-        // until the picture is in (or if it can't be decoded) the emoji stands in as a smiley
-        var fallback = new TextBlock { FontSize = 30, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
-        Smileys.SetText(fallback, s.Emoji);
-        var img = new Image { Stretch = Stretch.Uniform };
-        RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.HighQuality);
-        grid.Children.Add(fallback);
-        grid.Children.Add(img);
-        _ = LoadSticker(img, fallback, s, (int)(w * 1.5));
-        return new InlineUIContainer(grid) { BaselineAlignment = BaselineAlignment.Bottom };
+        return new InlineUIContainer(new StickerBox(s, w, h, play: true) { ToolTip = "Стикер " + s.Emoji }) { BaselineAlignment = BaselineAlignment.Bottom };
+    }
+
+    /// <summary>Long rich messages arrive cut short; the rest is fetched on request.</summary>
+    Inline ReadMore(TdApi.Message m)
+    {
+        var link = new Hyperlink(new Run("Читать полностью…")) { Cursor = Cursors.Hand };
+        link.Click += async (_, _) =>
+        {
+            try
+            {
+                var full = await Tg.Client.ExecuteAsync(new TdApi.GetFullRichMessage { ChatId = m.ChatId, MessageId = m.Id });
+                OnEdited(m.ChatId, m.Id, new TdApi.MessageContent.MessageRichMessage { Message = full });
+            }
+            catch (TdException ex) { Note("Не удалось загрузить: " + (ex.Error?.Message ?? ex.Message)); }
+        };
+        return new Span(new LineBreak()) { Inlines = { link } };
     }
 
     static async Task LoadInto(Image img, TdApi.File? f, int width)
     {
         if (await Media.Image(f, width) is { } bmp) img.Source = bmp;
-    }
-
-    static async Task LoadSticker(Image img, TextBlock fallback, TdApi.Sticker s, int width)
-    {
-        if (await Media.Image(Media.StickerStill(s), width) is not { } bmp) return;
-        img.Source = bmp;
-        fallback.Visibility = Visibility.Collapsed;
     }
 
     string TickText(TdApi.Message m) => m.SendingState switch
@@ -306,32 +314,6 @@ public partial class ChatWindow : Window
         };
         var b = Palette[(int)(Math.Abs(id) % Palette.Length)];
         return FindResource("DarkSkin") is true ? Lighter(b) : b;
-    }
-
-    static void AddWithLinks(Paragraph p, string text)
-    {
-        var pos = 0;
-        foreach (Match mt in Url.Matches(text))
-        {
-            if (mt.Index > pos) AddWithSmileys(p, text[pos..mt.Index]);
-            var raw = mt.Value.TrimEnd('.', ',', ')', '!', '?');
-            var href = raw.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? raw : "https://" + raw;
-            if (Uri.TryCreate(href, UriKind.Absolute, out var uri))
-            {
-                var link = new Hyperlink(new Run(raw)) { NavigateUri = uri, Cursor = Cursors.Hand };
-                link.RequestNavigate += (_, e) => Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
-                p.Inlines.Add(link);
-            }
-            else p.Inlines.Add(new Run(raw));
-            pos = mt.Index + raw.Length;
-        }
-        if (pos < text.Length) AddWithSmileys(p, text[pos..]);
-    }
-
-    static void AddWithSmileys(Paragraph p, string text)
-    {
-        foreach (var (piece, sm) in Smileys.Split(text))
-            p.Inlines.Add(sm == null ? new Run(piece) : Smileys.Make(sm, 20, piece));
     }
 
     void Append(TdApi.Message m)
@@ -836,25 +818,14 @@ public partial class ChatWindow : Window
 
     Button StickerCell(TdApi.Sticker s)
     {
-        var fallback = new TextBlock { FontSize = 26, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-        Smileys.SetText(fallback, s.Emoji);
-        var img = new Image { Stretch = Stretch.Uniform };
-        RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.HighQuality);
-        var grid = new Grid { Width = 72, Height = 72 };
-        grid.Children.Add(fallback);
-        grid.Children.Add(img);
-        var b = new Button { Content = grid, Padding = new Thickness(2), Margin = new Thickness(1), Focusable = false, ToolTip = s.Emoji };
+        // still pictures in the panel, the animation plays under the mouse
+        var box = new StickerBox(s, 72, 72, play: false);
+        var b = new Button { Content = box, Padding = new Thickness(2), Margin = new Thickness(1), Focusable = false, ToolTip = s.Emoji };
         b.SetResourceReference(StyleProperty, "ToolButton");
         b.Click += (_, _) => SendSticker(s);
-        _ = LoadStickerThumb(img, fallback, s);
+        b.MouseEnter += (_, _) => box.Play();
+        b.MouseLeave += (_, _) => box.Pause();
         return b;
-    }
-
-    static async Task LoadStickerThumb(Image img, TextBlock fallback, TdApi.Sticker s)
-    {
-        if (await Media.Image(Media.StickerStill(s, true), 108) is not { } bmp) return;
-        img.Source = bmp;
-        fallback.Visibility = Visibility.Collapsed;
     }
 
     void Close_Click(object sender, RoutedEventArgs e) => Close();

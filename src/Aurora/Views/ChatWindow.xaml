@@ -61,12 +61,11 @@
             </Border>
 
             <!-- Toolbar between history and input, like the old message window -->
-            <Border DockPanel.Dock="Bottom" Background="{DynamicResource Toolbar}" BorderBrush="{DynamicResource Line}" BorderThickness="1,0,1,0" Padding="2">
+            <Border DockPanel.Dock="Bottom" Background="{DynamicResource Toolbar}" BorderBrush="{DynamicResource Line}" BorderThickness="1,0,1,0" Padding="3,2">
                 <StackPanel Orientation="Horizontal">
-                    <ToggleButton x:Name="SmileBtn" Focusable="False" ToolTip="Смайлы (Ctrl+E)" Padding="4,1"
-                                  Background="Transparent" BorderBrush="Transparent">
+                    <ToggleButton x:Name="SmileBtn" Style="{StaticResource BarButton}" ToolTip="Смайлы (Ctrl+E)">
                         <StackPanel Orientation="Horizontal">
-                            <Image x:Name="SmileIcon" Width="18" Height="18" Margin="0,0,4,0" />
+                            <Image x:Name="SmileIcon" Width="16" Height="16" Margin="0,0,5,0" />
                             <TextBlock Text="Смайлы" VerticalAlignment="Center" />
                         </StackPanel>
                     </ToggleButton>
@@ -80,13 +79,17 @@
                             <WrapPanel x:Name="SmileGrid" Width="248" />
                         </Border>
                     </Popup>
-                    <Button Style="{StaticResource ToolButton}" Focusable="False" ToolTip="Отправить фото (можно вставить Ctrl+V или перетащить в окно)"
-                            Padding="4,1" Margin="4,0,0,0" Click="Photo_Click">
-                        <TextBlock Text="🖼 Фото" VerticalAlignment="Center" />
+                    <Button Style="{StaticResource BarButton}" Click="Photo_Click" ToolTip="Отправить фото. Можно вставить через Ctrl+V или перетащить файл в окно">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{StaticResource IcoPhoto}" Width="16" Height="16" Margin="0,0,5,0" />
+                            <TextBlock Text="Фото" VerticalAlignment="Center" />
+                        </StackPanel>
                     </Button>
-                    <ToggleButton x:Name="StickerBtn" Focusable="False" ToolTip="Стикеры из ваших наборов Telegram" Padding="4,1" Margin="4,0,0,0"
-                                  Background="Transparent" BorderBrush="Transparent">
-                        <TextBlock Text="🐱 Стикеры" VerticalAlignment="Center" />
+                    <ToggleButton x:Name="StickerBtn" Style="{StaticResource BarButton}" ToolTip="Стикеры из ваших наборов Telegram">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{StaticResource IcoSticker}" Width="16" Height="16" Margin="0,0,5,0" />
+                            <TextBlock Text="Стикеры" VerticalAlignment="Center" />
+                        </StackPanel>
                     </ToggleButton>
                     <Popup x:Name="StickerPopup" PlacementTarget="{Binding ElementName=StickerBtn}" Placement="Top"
                            StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" Opened="StickerPopup_Opened"

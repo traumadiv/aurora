@@ -49,6 +49,47 @@ public static class Text
         return clean.Length > 0 ? clean : s;
     }
 
+    /// <summary>Rich text without styling: for previews in the chat list and for copying.</summary>
+    public static string RichPlain(TdApi.RichText? t) => t switch
+    {
+        null => "",
+        TdApi.RichText.RichTextPlain x => x.Text,
+        TdApi.RichText.RichTexts x => string.Concat(x.Texts.Select(RichPlain)),
+        TdApi.RichText.RichTextCustomEmoji x => x.AlternativeText,
+        TdApi.RichText.RichTextMathematicalExpression x => x.Expression,
+        _ => t.GetType().GetProperty("Text")?.GetValue(t) is TdApi.RichText inner ? RichPlain(inner) : "",
+    };
+
+    /// <summary>The text of a rich message, block by block on separate lines.</summary>
+    public static string RichPlain(TdApi.RichMessage? m) =>
+        m == null ? "" : string.Join("\n", m.Blocks.Select(BlockPlain).Where(s => s.Length > 0));
+
+    static string BlockPlain(TdApi.PageBlock b) => b switch
+    {
+        TdApi.PageBlock.PageBlockParagraph x => RichPlain(x.Text),
+        TdApi.PageBlock.PageBlockTitle x => RichPlain(x.Title),
+        TdApi.PageBlock.PageBlockSubtitle x => RichPlain(x.Subtitle),
+        TdApi.PageBlock.PageBlockHeader x => RichPlain(x.Header),
+        TdApi.PageBlock.PageBlockSubheader x => RichPlain(x.Subheader),
+        TdApi.PageBlock.PageBlockSectionHeading x => RichPlain(x.Text),
+        TdApi.PageBlock.PageBlockPreformatted x => RichPlain(x.Text),
+        TdApi.PageBlock.PageBlockPullQuote x => RichPlain(x.Text),
+        TdApi.PageBlock.PageBlockExpandableBlockQuote x => RichPlain(x.Text),
+        TdApi.PageBlock.PageBlockBlockQuote x => string.Join("\n", x.Blocks.Select(BlockPlain)),
+        TdApi.PageBlock.PageBlockList x => string.Join("\n", x.Items.Select(i => "• " + string.Join(" ", i.Blocks.Select(BlockPlain)))),
+        TdApi.PageBlock.PageBlockDetails x => RichPlain(x.Header),
+        TdApi.PageBlock.PageBlockPhoto => "[Фото]",
+        TdApi.PageBlock.PageBlockVideo => "[Видео]",
+        _ => "",
+    };
+
+    static string RichPreview(TdApi.RichMessage m)
+    {
+        var text = RichPlain(m);
+        var line = text.Split('\n').FirstOrDefault(l => l.Trim().Length > 0)?.Trim() ?? "";
+        return line.Length > 0 ? line : "[Сообщение]";
+    }
+
     public static string Describe(TdApi.MessageContent? c) => c switch
     {
         null => "",
@@ -75,8 +116,24 @@ public static class Text
         TdApi.MessageContent.MessageChatChangePhoto => "* новое фото чата",
         TdApi.MessageContent.MessagePinMessage => "* закрепил(а) сообщение",
         TdApi.MessageContent.MessageContactRegistered => "* теперь в Telegram!",
+        TdApi.MessageContent.MessageRichMessage r => RichPreview(r.Message),
+        TdApi.MessageContent.MessageSupergroupChatCreate g => $"* создал(а) группу «{NoEmoji(g.Title)}»",
+        TdApi.MessageContent.MessageBasicGroupChatCreate g => $"* создал(а) группу «{NoEmoji(g.Title)}»",
+        TdApi.MessageContent.MessageChatUpgradeTo => "* группа стала супергруппой",
+        TdApi.MessageContent.MessageChatUpgradeFrom => "* группа стала супергруппой",
+        TdApi.MessageContent.MessageScreenshotTaken => "* сделал(а) скриншот",
+        TdApi.MessageContent.MessageChatSetMessageAutoDeleteTime => "* изменил(а) автоудаление сообщений",
+        TdApi.MessageContent.MessageForumTopicCreated => "* создал(а) тему",
+        TdApi.MessageContent.MessageVideoChatStarted => "* начал(а) видеочат",
+        TdApi.MessageContent.MessageVideoChatEnded => "* видеочат завершён",
+        TdApi.MessageContent.MessageGiftedPremium => "[Подарок: Telegram Premium]",
+        TdApi.MessageContent.MessageStory => "[История]",
+        TdApi.MessageContent.MessageGame => "[Игра]",
+        TdApi.MessageContent.MessageInvoice => "[Счёт]",
+        TdApi.MessageContent.MessageExpiredPhoto => "[Фото удалено]",
+        TdApi.MessageContent.MessageExpiredVideo => "[Видео удалено]",
         TdApi.MessageContent.MessageUnsupported => "[Не поддерживается]",
-        _ => "[" + c.GetType().Name.Replace("Message", "") + "]",
+        _ => "[Сообщение, которое Aurora пока не умеет показывать]",
     };
 
     public static bool IsService(TdApi.MessageContent? c) =>

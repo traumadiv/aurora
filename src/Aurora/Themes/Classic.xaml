@@ -185,6 +185,86 @@
         </Setter>
     </Style>
 
+    <!-- Chat toolbar: flat buttons that light up under the mouse and stay pressed while their panel is open -->
+    <Style x:Key="BarButton" TargetType="ButtonBase">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Ink}" />
+        <Setter Property="Padding" Value="6,2,8,2" />
+        <Setter Property="Margin" Value="0,0,2,0" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ButtonBase">
+                    <Border x:Name="b" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1" CornerRadius="{DynamicResource ToolRadius}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource ToolHover}" />
+                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource ToolHoverBorder}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource ToolPressed}" />
+                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource ToolHoverBorder}" />
+                        </Trigger>
+                        <Trigger Property="ToggleButton.IsChecked" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource ToolPressed}" />
+                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource ToolHoverBorder}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 16px toolbar icons, drawn so they stay sharp at any scaling -->
+    <DrawingImage x:Key="IcoPhoto">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Geometry="M0,0 H16 V16 H0 Z" Brush="Transparent" />
+                <GeometryDrawing Geometry="M1.5,2.5 H14.5 V13.5 H1.5 Z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#2F7FD8" Offset="0" />
+                            <GradientStop Color="#A9DCFF" Offset="1" />
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                    <GeometryDrawing.Pen><Pen Brush="#355C8C" Thickness="1" /></GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFE680"><GeometryDrawing.Geometry><EllipseGeometry Center="11,5.8" RadiusX="1.7" RadiusY="1.7" /></GeometryDrawing.Geometry></GeometryDrawing>
+                <GeometryDrawing Geometry="M2,13 L6,7.5 L9,11 L11,9 L14,13 Z" Brush="#46A238" />
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+    <DrawingImage x:Key="IcoSticker">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Geometry="M0,0 H16 V16 H0 Z" Brush="Transparent" />
+                <GeometryDrawing Geometry="M1.5,3.5 Q1.5,1.5 3.5,1.5 H12.5 Q14.5,1.5 14.5,3.5 V10 L10,14.5 H3.5 Q1.5,14.5 1.5,12.5 Z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#FFE27A" Offset="0" />
+                            <GradientStop Color="#FFA42B" Offset="1" />
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                    <GeometryDrawing.Pen><Pen Brush="#B86A00" Thickness="1" /></GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M14.5,10 L10,14.5 V11.5 Q10,10 11.5,10 Z" Brush="#FFF6DA">
+                    <GeometryDrawing.Pen><Pen Brush="#B86A00" Thickness="1" /></GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#6B3B00"><GeometryDrawing.Geometry><EllipseGeometry Center="5.6,6.2" RadiusX="1" RadiusY="1.2" /></GeometryDrawing.Geometry></GeometryDrawing>
+                <GeometryDrawing Brush="#6B3B00"><GeometryDrawing.Geometry><EllipseGeometry Center="9.6,6.2" RadiusX="1" RadiusY="1.2" /></GeometryDrawing.Geometry></GeometryDrawing>
+                <GeometryDrawing Geometry="M4.6,9 Q7.6,12 10.2,9">
+                    <GeometryDrawing.Pen><Pen Brush="#6B3B00" Thickness="1.2" StartLineCap="Round" EndLineCap="Round" /></GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
     <!-- List row with the skin's hover and selection: settings sections, proxies -->
     <Style x:Key="GlassItem" TargetType="ListBoxItem">
         <Setter Property="Cursor" Value="Hand" />

@@ -88,6 +88,49 @@ public static class Media
         t?.Format is TdApi.ThumbnailFormat.ThumbnailFormatWebp or TdApi.ThumbnailFormat.ThumbnailFormatJpeg or TdApi.ThumbnailFormat.ThumbnailFormatPng
             ? t.File : null;
 
+    // ---------- custom emoji ----------
+
+    static readonly Dictionary<long, Task<TdApi.Sticker?>> _emoji = new();
+    static List<(long Id, TaskCompletionSource<TdApi.Sticker?> Done)>? _emojiBatch;
+
+    /// <summary>The sticker behind a custom emoji. Requests from one render are sent to TDLib together.</summary>
+    public static Task<TdApi.Sticker?> CustomEmoji(long id)
+    {
+        if (_emoji.TryGetValue(id, out var known)) return known;
+        if (Demo.On || Tg.Client == null) return _emoji[id] = Task.FromResult(Demo.CustomEmoji(id));
+        var done = new TaskCompletionSource<TdApi.Sticker?>();
+        _emoji[id] = done.Task;
+        if (_emojiBatch == null)
+        {
+            _emojiBatch = new();
+            _ = FlushEmoji();
+        }
+        _emojiBatch.Add((id, done));
+        return done.Task;
+    }
+
+    static async Task FlushEmoji()
+    {
+        await Task.Delay(30);
+        var batch = _emojiBatch!;
+        _emojiBatch = null;
+        foreach (var chunk in batch.Chunk(200))
+        {
+            try
+            {
+                var r = await Tg.Client.ExecuteAsync(new TdApi.GetCustomEmojiStickers { CustomEmojiIds = chunk.Select(x => x.Id).ToArray() });
+                var byId = new Dictionary<long, TdApi.Sticker>();
+                foreach (var s in r.Stickers_)
+                    if (s.FullType is TdApi.StickerFullType.StickerFullTypeCustomEmoji ce) byId[ce.CustomEmojiId] = s;
+                foreach (var (id, done) in chunk) done.TrySetResult(byId.GetValueOrDefault(id));
+            }
+            catch
+            {
+                foreach (var (id, done) in chunk) { _emoji.Remove(id); done.TrySetResult(null); }
+            }
+        }
+    }
+
     public static bool IsImageFile(string path) =>
         System.IO.Path.GetExtension(path).ToLowerInvariant() is ".jpg" or ".jpeg" or ".png" or ".bmp" or ".gif" or ".webp";
 }
