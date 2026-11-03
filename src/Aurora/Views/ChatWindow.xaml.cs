@@ -59,7 +59,7 @@ public partial class ChatWindow : Window
         App.Chrome(this);
         _chat = chat;
         DataContext = chat;
-        Title = chat.Title + " — сообщения";
+        Title = chat.Title + L(" — сообщения");
         Icon = Icons.Bitmap(chat.Icon);
 
         // Cascade new windows a little so several sessions don't stack exactly.
@@ -179,23 +179,23 @@ public partial class ChatWindow : Window
             return p;
         }
 
-        var name = m.IsOutgoing ? "Вы" : Tg.SenderName(m.SenderId);
+        var name = m.IsOutgoing ? L("Вы") : Tg.SenderName(m.SenderId);
         if (_chat.Kind == ChatKind.Channel && !m.IsOutgoing) name = _chat.Title;
         var color = deleted ? DeletedInk : m.IsOutgoing ? Mine : _chat.Kind == ChatKind.Group ? ColorFor(m.SenderId) : Theirs;
         var head = new Run($"{name} ({Text.Stamp(m.Date)}):") { Foreground = color, FontWeight = FontWeights.Bold };
         p.Inlines.Add(head);
         if (deleted)
-            p.Inlines.Add(new Run("  удалено" + (arch is { DeletedAt: > 0 } ? " в " + Text.Stamp(arch.DeletedAt) : ""))
+            p.Inlines.Add(new Run(L("  удалено") + (arch is { DeletedAt: > 0 } ? L(" в ") + Text.Stamp(arch.DeletedAt) : ""))
             {
                 Foreground = DeletedMark, FontSize = 10, FontWeight = FontWeights.Bold,
-                ToolTip = "Сообщение удалили в Telegram. Aurora показывает копию, которую успела получить.",
+                ToolTip = L("Сообщение удалили в Telegram. Aurora показывает копию, которую успела получить."),
             });
         if (m.EditDate > 0 || arch?.Versions.Count > 0)
         {
-            var mark = new Run(arch?.Versions.Count > 0 ? "  изм. ▾" : "  изм.") { Foreground = Gray, FontSize = 10 };
+            var mark = new Run(arch?.Versions.Count > 0 ? L("  изм. ▾") : L("  изм.")) { Foreground = Gray, FontSize = 10 };
             if (arch?.Versions.Count > 0)
             {
-                mark.ToolTip = "Было:\n" + string.Join("\n\n", arch!.Versions);
+                mark.ToolTip = L("Было:\n") + string.Join("\n\n", arch!.Versions);
                 mark.Cursor = Cursors.Help;
                 ToolTipService.SetShowDuration(mark, 60000);
             }
@@ -252,7 +252,7 @@ public partial class ChatWindow : Window
         var img = new Image
         {
             Width = w, Height = h, Stretch = Stretch.UniformToFill, Source = Media.Mini(photo.Minithumbnail),
-            Cursor = Cursors.Hand, ToolTip = "Открыть фото",
+            Cursor = Cursors.Hand, ToolTip = L("Открыть фото"),
         };
         RenderOptions.SetBitmapScalingMode(img, BitmapScalingMode.HighQuality);
         var frame = new Border
@@ -273,13 +273,13 @@ public partial class ChatWindow : Window
     static Inline StickerInline(TdApi.Sticker s)
     {
         var (w, h) = Fit(s.Width, s.Height, 140, 140);
-        return new InlineUIContainer(new StickerBox(s, w, h, play: true) { ToolTip = "Стикер " + s.Emoji }) { BaselineAlignment = BaselineAlignment.Bottom };
+        return new InlineUIContainer(new StickerBox(s, w, h, play: true) { ToolTip = L("Стикер ") + s.Emoji }) { BaselineAlignment = BaselineAlignment.Bottom };
     }
 
     /// <summary>Long rich messages arrive cut short; the rest is fetched on request.</summary>
     Inline ReadMore(TdApi.Message m)
     {
-        var link = new Hyperlink(new Run("Читать полностью…")) { Cursor = Cursors.Hand };
+        var link = new Hyperlink(new Run(L("Читать полностью…"))) { Cursor = Cursors.Hand };
         link.Click += async (_, _) =>
         {
             try
@@ -287,7 +287,7 @@ public partial class ChatWindow : Window
                 var full = await Tg.Client.ExecuteAsync(new TdApi.GetFullRichMessage { ChatId = m.ChatId, MessageId = m.Id });
                 OnEdited(m.ChatId, m.Id, new TdApi.MessageContent.MessageRichMessage { Message = full });
             }
-            catch (TdException ex) { Note("Не удалось загрузить: " + (ex.Error?.Message ?? ex.Message)); }
+            catch (TdException ex) { Note(L("Не удалось загрузить: ") + (ex.Error?.Message ?? ex.Message)); }
         };
         return new Span(new LineBreak()) { Inlines = { link } };
     }
@@ -300,7 +300,7 @@ public partial class ChatWindow : Window
     string TickText(TdApi.Message m) => m.SendingState switch
     {
         TdApi.MessageSendingState.MessageSendingStatePending => "  ⌛",
-        TdApi.MessageSendingState.MessageSendingStateFailed => "  ✗ не отправлено",
+        TdApi.MessageSendingState.MessageSendingStateFailed => L("  ✗ не отправлено"),
         _ => m.Id <= _lastReadOutbox ? "  ✓✓" : "  ✓",
     };
 
@@ -367,29 +367,29 @@ public partial class ChatWindow : Window
         var menu = History.ContextMenu;
         menu.Items.Clear();
         if (!History.Selection.IsEmpty)
-            menu.Items.Add(MenuItem("Копировать выделенное", () => Clipboard.SetText(History.Selection.Text)));
+            menu.Items.Add(MenuItem(L("Копировать выделенное"), () => Clipboard.SetText(History.Selection.Text)));
         if (m != null)
         {
             var deleted = _deleted.Contains(m.Id);
             if (m.IsOutgoing && IsText(m) && !deleted)
             {
-                var edit = MenuItem("Редактировать", () => BeginEdit(m));
+                var edit = MenuItem(L("Редактировать"), () => BeginEdit(m));
                 edit.InputGestureText = "↑";
                 menu.Items.Insert(0, edit);
             }
-            menu.Items.Add(MenuItem("Копировать текст", () => Clipboard.SetText(Text.Describe(m.Content))));
+            menu.Items.Add(MenuItem(L("Копировать текст"), () => Clipboard.SetText(Text.Describe(m.Content))));
             if (Archive.Get(_chat.Id, m.Id) is { Versions.Count: > 0 } arch)
-                menu.Items.Add(MenuItem("История правок…", () => MessageBox.Show(this,
-                    string.Join("\n\n", arch.Versions.Select((v, i) => $"{i + 1}. {v}")) + $"\n\nСейчас: {arch.Text}",
-                    "Как менялось сообщение", MessageBoxButton.OK, MessageBoxImage.Information)));
+                menu.Items.Add(MenuItem(L("История правок…"), () => MessageBox.Show(this,
+                    string.Join("\n\n", arch.Versions.Select((v, i) => $"{i + 1}. {v}")) + "\n\n" + L("Сейчас: {0}", arch.Text),
+                    L("Как менялось сообщение"), MessageBoxButton.OK, MessageBoxImage.Information)));
             menu.Items.Add(new Separator());
             if (deleted)
-                menu.Items.Add(MenuItem("Убрать из архива", () => ForgetDeleted(m.Id)));
+                menu.Items.Add(MenuItem(L("Убрать из архива"), () => ForgetDeleted(m.Id)));
             else
             {
-                menu.Items.Add(MenuItem("Удалить у меня", () => Delete(m, revoke: false)));
+                menu.Items.Add(MenuItem(L("Удалить у меня"), () => Delete(m, revoke: false)));
                 if (m.IsOutgoing || _chat.Kind is ChatKind.User or ChatKind.Bot)
-                    menu.Items.Add(MenuItem(_chat.Kind is ChatKind.User or ChatKind.Bot ? "Удалить у всех" : "Удалить для всех", () => Delete(m, revoke: true)));
+                    menu.Items.Add(MenuItem(_chat.Kind is ChatKind.User or ChatKind.Bot ? L("Удалить у всех") : L("Удалить для всех"), () => Delete(m, revoke: true)));
             }
         }
         if (menu.Items.Count == 0) { e.Handled = true; return; }
@@ -405,12 +405,12 @@ public partial class ChatWindow : Window
 
     async void Delete(TdApi.Message m, bool revoke)
     {
-        if (MessageBox.Show(this, revoke ? "Удалить сообщение у всех?" : "Удалить сообщение только у вас?", "Aurora",
+        if (MessageBox.Show(this, revoke ? L("Удалить сообщение у всех?") : L("Удалить сообщение только у вас?"), "Aurora",
                 MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
         Archive.Forget(_chat.Id, [m.Id]); // deleted on purpose: no ghost copy
         if (Demo.On) { Tg.DemoDelete(_chat.Id, m.Id); return; }
         try { await Tg.Client.ExecuteAsync(new TdApi.DeleteMessages { ChatId = _chat.Id, MessageIds = [m.Id], Revoke = revoke }); }
-        catch (TdException ex) { Note("Не удалось удалить: " + (ex.Error?.Message ?? ex.Message)); }
+        catch (TdException ex) { Note(L("Не удалось удалить: ") + (ex.Error?.Message ?? ex.Message)); }
     }
 
     void ForgetDeleted(long id)
@@ -427,7 +427,7 @@ public partial class ChatWindow : Window
         var text = Text.Describe(m.Content);
         EditPreview.Text = text.ReplaceLineEndings(" ");
         EditBar.Visibility = Visibility.Visible;
-        SendText.Text = "Сохранить";
+        SendText.Text = L("Сохранить");
         Input.Text = text;
         Input.CaretIndex = Input.Text.Length;
         Input.Focus();
@@ -438,7 +438,7 @@ public partial class ChatWindow : Window
         if (_editingId == 0) return;
         _editingId = 0;
         EditBar.Visibility = Visibility.Collapsed;
-        SendText.Text = "Отправить";
+        SendText.Text = L("Отправить");
         Input.Clear();
     }
 
@@ -465,10 +465,10 @@ public partial class ChatWindow : Window
         {
             Note((ex.Error?.Message ?? ex.Message) switch
             {
-                "MESSAGE_EDIT_TIME_EXPIRED" => "Это сообщение уже нельзя изменить: прошло больше 48 часов.",
-                "MESSAGE_NOT_MODIFIED" => "Текст не изменился.",
-                "Message can't be edited" => "Это сообщение нельзя изменить.",
-                var s => "Не удалось изменить: " + s,
+                "MESSAGE_EDIT_TIME_EXPIRED" => L("Это сообщение уже нельзя изменить: прошло больше 48 часов."),
+                "MESSAGE_NOT_MODIFIED" => L("Текст не изменился."),
+                "Message can't be edited" => L("Это сообщение нельзя изменить."),
+                var s => L("Не удалось изменить: ") + s,
             });
         }
     }
@@ -642,7 +642,7 @@ public partial class ChatWindow : Window
         catch (TdException ex)
         {
             Input.Text = text; // give the text back instead of losing it
-            var p = new Paragraph(new Run("Не отправлено: " + (ex.Error?.Message ?? ex.Message))) { Foreground = Theirs, FontStyle = FontStyles.Italic };
+            var p = new Paragraph(new Run(L("Не отправлено: ") + (ex.Error?.Message ?? ex.Message))) { Foreground = Theirs, FontStyle = FontStyles.Italic };
             Doc.Blocks.Add(p);
             ScrollToEnd();
         }
@@ -654,8 +654,8 @@ public partial class ChatWindow : Window
     {
         var dlg = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Отправить фото",
-            Filter = "Изображения|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.webp|Все файлы|*.*",
+            Title = L("Отправить фото"),
+            Filter = L("Изображения|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.webp|Все файлы|*.*"),
             Multiselect = true,
         };
         if (dlg.ShowDialog(this) != true) return;
@@ -695,8 +695,8 @@ public partial class ChatWindow : Window
             enc.Save(fs);
         }
         if (path == null) return false;
-        var note = Input.Text.Trim().Length > 0 ? "\nТекст из поля ввода станет подписью." : "";
-        if (MessageBox.Show(this, "Отправить картинку из буфера обмена?" + note, "Aurora",
+        var note = Input.Text.Trim().Length > 0 ? L("\nТекст из поля ввода станет подписью.") : "";
+        if (MessageBox.Show(this, L("Отправить картинку из буфера обмена?") + note, "Aurora",
                 MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK)
             SendPhoto(path);
         return true;
@@ -710,7 +710,7 @@ public partial class ChatWindow : Window
             var frame = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.DelayCreation, BitmapCacheOption.None);
             (w, h) = (frame.PixelWidth, frame.PixelHeight);
         }
-        catch { Note("Это не похоже на картинку: " + System.IO.Path.GetFileName(path)); return; }
+        catch { Note(L("Это не похоже на картинку: ") + System.IO.Path.GetFileName(path)); return; }
 
         // the typed text goes along as the caption
         var caption = _editingId == 0 ? Input.Text.Trim() : "";
@@ -750,7 +750,7 @@ public partial class ChatWindow : Window
         {
             await Tg.Client.ExecuteAsync(new TdApi.SendMessage { ChatId = _chat.Id, InputMessageContent = content });
         }
-        catch (TdException ex) { Note("Не отправлено: " + (ex.Error?.Message ?? ex.Message)); }
+        catch (TdException ex) { Note(L("Не отправлено: ") + (ex.Error?.Message ?? ex.Message)); }
     }
 
     // Sticker sets are the same for every window, so they are fetched once.
@@ -764,22 +764,22 @@ public partial class ChatWindow : Window
         if (StickerSets.Children.Count > 0) return;
         if (Demo.On || Tg.Client == null)
         {
-            StickerNote.Text = "Здесь появятся стикеры из ваших наборов Telegram, когда вы войдёте в аккаунт.";
+            StickerNote.Text = L("Здесь появятся стикеры из ваших наборов Telegram, когда вы войдёте в аккаунт.");
             return;
         }
-        StickerNote.Text = "Загружаю наборы…";
+        StickerNote.Text = L("Загружаю наборы…");
         try
         {
             _recentStickers ??= (await Tg.Client.ExecuteAsync(new TdApi.GetRecentStickers { IsAttached = false })).Stickers_;
             _stickerSets ??= (await Tg.Client.ExecuteAsync(new TdApi.GetInstalledStickerSets { StickerType = new TdApi.StickerType.StickerTypeRegular() })).Sets;
         }
-        catch (TdException ex) { StickerNote.Text = "Не удалось загрузить стикеры: " + (ex.Error?.Message ?? ex.Message); return; }
+        catch (TdException ex) { StickerNote.Text = L("Не удалось загрузить стикеры: ") + (ex.Error?.Message ?? ex.Message); return; }
 
         StickerNote.Text = "";
         var recent = _recentStickers;
         if (recent.Length > 0)
-            AddStickerTab(new TextBlock { Text = "Недавние", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 4, 0) },
-                "Недавние", () => Task.FromResult(recent));
+            AddStickerTab(new TextBlock { Text = L("Недавние"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 4, 0) },
+                L("Недавние"), () => Task.FromResult(recent));
         foreach (var set in _stickerSets)
         {
             var icon = new Image { Width = 26, Height = 26 };
@@ -792,7 +792,7 @@ public partial class ChatWindow : Window
                 return list;
             });
         }
-        if (StickerSets.Children.Count == 0) { StickerNote.Text = "У вас нет наборов стикеров. Добавьте их в Telegram на телефоне."; return; }
+        if (StickerSets.Children.Count == 0) { StickerNote.Text = L("У вас нет наборов стикеров. Добавьте их в Telegram на телефоне."); return; }
         ((Button)StickerSets.Children[0]).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
     }
 
@@ -809,7 +809,7 @@ public partial class ChatWindow : Window
             StickerNote.Text = title;
             TdApi.Sticker[] list;
             try { list = await load(); }
-            catch (TdException ex) { StickerNote.Text = "Не удалось открыть набор: " + (ex.Error?.Message ?? ex.Message); return; }
+            catch (TdException ex) { StickerNote.Text = L("Не удалось открыть набор: ") + (ex.Error?.Message ?? ex.Message); return; }
             if (_stickerTab != tab) return; // another tab was clicked meanwhile
             foreach (var s in list) StickerGrid.Children.Add(StickerCell(s));
         };

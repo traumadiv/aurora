@@ -13,27 +13,27 @@ public static class SkinBuilder
 {
     public static readonly (string Key, string Title, string Note)[] Skins =
     [
-        ("xp", "XP синяя", "Luna, как в 2001-м"),
-        ("olive", "XP оливковая", "зелёная Luna"),
-        ("silver", "XP серебристая", "металлик"),
-        ("royale", "Royale", "тёмно-синее стекло Media Center"),
-        ("classic", "Классика", "серые окна 98 / 2000"),
-        ("icq", "ICQ 2003", "XP, бежевый и цветочки"),
-        ("aero", "Frutiger Aero", "стекло, небо, пузыри"),
+        ("xp", L("XP синяя"), L("Luna, как в 2001-м")),
+        ("olive", L("XP оливковая"), L("зелёная Luna")),
+        ("silver", L("XP серебристая"), L("металлик")),
+        ("royale", "Royale", L("тёмно-синее стекло Media Center")),
+        ("classic", L("Классика"), L("серые окна 98 / 2000")),
+        ("icq", "ICQ 2003", L("XP, бежевый и цветочки")),
+        ("aero", "Frutiger Aero", L("стекло, небо, пузыри")),
     ];
 
     /// <summary>Accent presets offered in Settings.</summary>
     public static readonly (string Name, Color Color)[] Presets =
     [
-        ("Синий", C("#316AC5")),
-        ("Аква", C("#1FA2E6")),
-        ("Трава", C("#3DAA3F")),
-        ("Оливка", C("#7A8F4A")),
-        ("Бирюза", C("#14A89A")),
-        ("Сирень", C("#8A5BD6")),
-        ("Розовый", C("#E0508E")),
-        ("Закат", C("#EE7A1B")),
-        ("Графит", C("#5E7186")),
+        (L("Синий"), C("#316AC5")),
+        (L("Аква"), C("#1FA2E6")),
+        (L("Трава"), C("#3DAA3F")),
+        (L("Оливка"), C("#7A8F4A")),
+        (L("Бирюза"), C("#14A89A")),
+        (L("Сирень"), C("#8A5BD6")),
+        (L("Розовый"), C("#E0508E")),
+        (L("Закат"), C("#EE7A1B")),
+        (L("Графит"), C("#5E7186")),
     ];
 
     public static Color DefaultAccent(string skin) => skin switch

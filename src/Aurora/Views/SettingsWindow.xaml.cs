@@ -24,13 +24,15 @@ public partial class SettingsWindow : Window
 
         _pages =
         [
-            new("profile", "Мой профиль", "saved", ProfilePage),
-            new("look", "Внешний вид", "group", LookPage),
-            new("notify", "Уведомления", "msg", NotifyPage),
-            new("list", "Контакт-лист", "online", ListPage),
-            new("smileys", "Смайлы", "away", SmileysPage),
-            new("proxy", "Прокси", "channel", ProxyPage),
-            new("account", "Аккаунт", "offline", AccountPage),
+            new("profile", L("Мой профиль"), "saved", ProfilePage),
+            new("look", L("Внешний вид"), "group", LookPage),
+            new("notify", L("Уведомления"), "msg", NotifyPage),
+            new("list", L("Контакт-лист"), "online", ListPage),
+            new("archive", L("Архив сообщений"), "saved", ArchivePage),
+            new("smileys", L("Смайлы"), "away", SmileysPage),
+            new("proxy", L("Прокси"), "channel", ProxyPage),
+            new("account", L("Аккаунт"), "offline", AccountPage),
+            new("lang", "Язык / Language", "channel", LangPage),
         ];
         Nav.ItemsSource = _pages;
 
@@ -45,6 +47,8 @@ public partial class SettingsWindow : Window
         FillSmileys();
         UpdateSoundName();
         FillSkins();
+        FillArchive();
+        FillLanguages();
 
         Loaded += async (_, _) =>
         {
@@ -222,7 +226,7 @@ public partial class SettingsWindow : Window
         LastName.Text = _origLast = me.LastName;
         Username.Text = _origUser = me.Usernames?.EditableUsername ?? "";
         PhoneBox.Text = "+" + me.PhoneNumber;
-        AccountInfo.Text = $"Вы вошли как {(me.FirstName + " " + me.LastName).Trim()}, +{me.PhoneNumber}.";
+        AccountInfo.Text = L("Вы вошли как {0}, +{1}.", (me.FirstName + " " + me.LastName).Trim(), me.PhoneNumber);
         Bio.Text = _origBio = await Tg.About(Tg.ItemForUser(Tg.MyId));
     }
 
@@ -239,7 +243,7 @@ public partial class SettingsWindow : Window
         if (first.Length == 0)
         {
             Nav.SelectedItem = _pages[0];
-            ProfileError.Text = "Имя не может быть пустым.";
+            ProfileError.Text = L("Имя не может быть пустым.");
             return false;
         }
         try
@@ -253,9 +257,9 @@ public partial class SettingsWindow : Window
             Nav.SelectedItem = _pages[0];
             ProfileError.Text = (ex.Error?.Message ?? ex.Message) switch
             {
-                "USERNAME_OCCUPIED" => "Это имя пользователя уже занято.",
-                "USERNAME_INVALID" => "Недопустимое имя пользователя.",
-                "FIRSTNAME_INVALID" => "Недопустимое имя.",
+                "USERNAME_OCCUPIED" => L("Это имя пользователя уже занято."),
+                "USERNAME_INVALID" => L("Недопустимое имя пользователя."),
+                "FIRSTNAME_INVALID" => L("Недопустимое имя."),
                 var m => m,
             };
             return false;
@@ -273,6 +277,8 @@ public partial class SettingsWindow : Window
         cfg.HideOffline = HideOffline.IsChecked == true;
         cfg.AlwaysOnTop = OnTop.IsChecked == true;
         cfg.KeepDeleted = KeepDeleted.IsChecked == true;
+        var keep = SelectedKeepDays;
+        if (keep != cfg.ArchiveDays) { cfg.ArchiveDays = keep; Archive.Cleanup(keep); UpdateArchiveUsage(); }
         var smileysChanged = cfg.UseSmileys != (UseSmileys.IsChecked == true);
         cfg.UseSmileys = UseSmileys.IsChecked == true;
         if (!Demo.On) cfg.Save();
@@ -291,9 +297,9 @@ public partial class SettingsWindow : Window
         }
         var custom = File.Exists(Path.Combine(Smileys.PackDir, "smileys.txt"));
         PackInfo.Text = custom
-            ? $"Загружен ваш пак смайлов: {Smileys.All.Count} шт."
-            : "Встроенный набор. Чтобы поставить свой пак, положите картинки (GIF анимируются) и smileys.txt "
-              + "в папку смайлов. Строка файла: smile.gif 🙂 :) :-)";
+            ? L("Загружен ваш пак смайлов: {0} шт.", Smileys.All.Count)
+            : L("Встроенный набор. Чтобы поставить свой пак, положите картинки (GIF анимируются) и smileys.txt ")
+              + L("в папку смайлов. Строка файла: smile.gif 🙂 :) :-)");
     }
 
     void SmileyFolder_Click(object sender, RoutedEventArgs e) => OpenFolder(Smileys.PackDir);
@@ -308,7 +314,7 @@ public partial class SettingsWindow : Window
     void UpdateSoundName()
     {
         var custom = Sounds.Custom;
-        SoundName.Text = custom == null ? "Стандартный" : "Свой: " + Path.GetFileName(custom);
+        SoundName.Text = custom == null ? L("Стандартный") : L("Свой: ") + Path.GetFileName(custom);
         ResetSoundBtn.IsEnabled = custom != null;
     }
 
@@ -316,8 +322,8 @@ public partial class SettingsWindow : Window
     {
         var dlg = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Звук нового сообщения",
-            Filter = "Звуки (*.wav;*.mp3)|*.wav;*.mp3",
+            Title = L("Звук нового сообщения"),
+            Filter = L("Звуки (*.wav;*.mp3)|*.wav;*.mp3"),
         };
         if (dlg.ShowDialog(this) != true) return;
         try
@@ -326,7 +332,7 @@ public partial class SettingsWindow : Window
             UpdateSoundName();
             Sounds.Message();
         }
-        catch (Exception ex) { MessageBox.Show(this, "Не получилось поставить звук: " + ex.Message, "Aurora"); }
+        catch (Exception ex) { MessageBox.Show(this, L("Не получилось поставить звук: ") + ex.Message, "Aurora"); }
     }
 
     void ResetSound_Click(object sender, RoutedEventArgs e)
@@ -350,6 +356,102 @@ public partial class SettingsWindow : Window
         App.Current.ConfirmLogOut();
     }
 
+    // ---------- archive ----------
+
+    static string KeepLabel(int days) => days switch
+    {
+        0 => L("никогда не удалять"),
+        1 => L("1 дня"),
+        7 => L("недели"),
+        30 => L("месяца"),
+        90 => L("3 месяцев"),
+        365 => L("года"),
+        _ => L("{0} дн.", days),
+    };
+
+    void FillArchive()
+    {
+        ArchiveDays.Items.Clear();
+        foreach (var d in Archive.KeepChoices) ArchiveDays.Items.Add(new ComboBoxItem { Content = KeepLabel(d), Tag = d });
+        var cur = App.Cfg.ArchiveDays;
+        ArchiveDays.SelectedItem = ArchiveDays.Items.Cast<ComboBoxItem>().FirstOrDefault(i => (int)i.Tag == cur)
+            ?? ArchiveDays.Items[2];
+        UpdateArchiveUsage();
+    }
+
+    int SelectedKeepDays => ArchiveDays.SelectedItem is ComboBoxItem { Tag: int d } ? d : 30;
+
+    void UpdateArchiveUsage()
+    {
+        var (bytes, chats) = Archive.Usage();
+        ArchiveUsage.Text = bytes == 0
+            ? L("Архив пуст.")
+            : L("Архив занимает {0} в {1}.", Size(bytes), Plural(chats, "{0} чате", "{0} чатах", "{0} чатах"));
+    }
+
+    static string Size(long b) => b switch
+    {
+        < 1024 => L("{0} Б", b),
+        < 1024 * 1024 => L("{0:0.#} КБ", b / 1024.0),
+        _ => L("{0:0.#} МБ", b / 1024.0 / 1024.0),
+    };
+
+    void ArchiveCleanNow_Click(object sender, RoutedEventArgs e)
+    {
+        App.Cfg.ArchiveDays = SelectedKeepDays;
+        if (App.Cfg.ArchiveDays == 0) { Status.Text = L("Срок не задан: архив хранится всегда."); return; }
+        var n = Archive.Cleanup(App.Cfg.ArchiveDays);
+        Status.Text = n == 0 ? L("Нечего удалять.") : Plural(n, "Удалено {0} сообщение", "Удалено {0} сообщения", "Удалено {0} сообщений");
+        UpdateArchiveUsage();
+    }
+
+    void ArchiveClear_Click(object sender, RoutedEventArgs e)
+    {
+        if (MessageBox.Show(this, L("Удалить весь архив? Удалённые сообщения и прошлые версии правок больше не будут видны."),
+                "Aurora", MessageBoxButton.OKCancel, MessageBoxImage.Warning) != MessageBoxResult.OK) return;
+        Archive.Clear();
+        Status.Text = L("Архив удалён.");
+        UpdateArchiveUsage();
+    }
+
+    void ArchiveFolder_Click(object sender, RoutedEventArgs e)
+    {
+        Directory.CreateDirectory(Archive.Dir);
+        Process.Start(new ProcessStartInfo(Archive.Dir) { UseShellExecute = true });
+    }
+
+    // ---------- language ----------
+
+    void FillLanguages()
+    {
+        LangList.Children.Clear();
+        var chosen = App.Cfg.Language ?? Loc.Current;
+        foreach (var lang in Loc.All)
+        {
+            var rb = new RadioButton { Content = lang.Name, Tag = lang.Code, GroupName = "lang", Margin = new Thickness(0, 0, 0, 6), IsChecked = lang.Code == chosen };
+            rb.Checked += (_, _) => PickLanguage(lang.Code);
+            LangList.Children.Add(rb);
+        }
+        LangNote.Text = L("Язык меняется после перезапуска Aurora.");
+        LangRestart.Content = L("Перезапустить сейчас");
+    }
+
+    void PickLanguage(string code)
+    {
+        App.Cfg.Language = code;
+        if (!Demo.On) App.Cfg.Save();
+        // the hint is shown in the language the user just picked, so they can read it
+        LangNote.Text = code == "ru" ? "Язык изменится после перезапуска Aurora." : "The language changes after Aurora restarts.";
+        LangRestart.Content = code == "ru" ? "Перезапустить сейчас" : "Restart now";
+        LangRestart.Visibility = code == Loc.Current ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    void LangRestart_Click(object sender, RoutedEventArgs e)
+    {
+        ApplyLocal();
+        App.Current.Restart();
+    }
+
     // ---------- buttons ----------
 
     async void Ok_Click(object sender, RoutedEventArgs e)
@@ -361,6 +463,6 @@ public partial class SettingsWindow : Window
     async void Apply_Click(object sender, RoutedEventArgs e)
     {
         ApplyLocal();
-        if (await SaveProfile()) Status.Text = "Сохранено ✓";
+        if (await SaveProfile()) Status.Text = L("Сохранено ✓");
     }
 }

@@ -18,7 +18,7 @@ public partial class ContactListWindow : Window
     string _chatFilter = "all";
     bool _forceClose;
 
-    static readonly string[] GroupOrder = { "В сети", "Не в сети" };
+    static readonly string[] GroupOrder = { L("В сети"), L("Не в сети") };
 
     public ContactListWindow()
     {
@@ -99,7 +99,7 @@ public partial class ContactListWindow : Window
 
     void UpdateMe()
     {
-        if (Tg.MyId == 0 || !Tg.Users.TryGetValue(Tg.MyId, out var me)) { MeName.Text = "Загрузка…"; return; }
+        if (Tg.MyId == 0 || !Tg.Users.TryGetValue(Tg.MyId, out var me)) { MeName.Text = L("Загрузка…"); return; }
         MeName.Text = (me.FirstName + " " + me.LastName).Trim();
         var user = me.Usernames?.ActiveUsernames?.FirstOrDefault();
         MeSub.Text = Tg.Connection.Length > 0 ? Tg.Connection : user != null ? "@" + user : "+" + me.PhoneNumber;
@@ -117,7 +117,7 @@ public partial class ContactListWindow : Window
         var key = App.Current.Invisible ? "invisible" : "online";
         StatusIcon.Source = Icons.Get(key);
         MeIcon.Source = Icons.Get(key);
-        StatusText.Text = App.Current.Invisible ? "Невидимый" : "В сети";
+        StatusText.Text = App.Current.Invisible ? L("Невидимый") : L("В сети");
     }
 
     // ---------- unread badge on the Chats tab ----------
@@ -260,21 +260,21 @@ public partial class ContactListWindow : Window
         if (list.SelectedItem is not ChatItem c) { e.Handled = true; return; }
         var m = list.ContextMenu!;
         m.Items.Clear();
-        var open = Item("Открыть чат", () => App.Current.OpenChat(c.Id), c.Icon);
+        var open = Item(L("Открыть чат"), () => App.Current.OpenChat(c.Id), c.Icon);
         open.FontWeight = FontWeights.Bold;
         open.InputGestureText = "Enter";
         m.Items.Add(open);
         m.Items.Add(Item(c.Kind switch
         {
-            ChatKind.Group => "О группе",
-            ChatKind.Channel => "О канале",
-            _ => "Информация",
+            ChatKind.Group => L("О группе"),
+            ChatKind.Channel => L("О канале"),
+            _ => L("Информация"),
         }, () => App.Current.ShowInfo(c)));
         m.Items.Add(new Separator());
-        if (c.HasUnread) m.Items.Add(Item("Отметить прочитанным", () => Tg.MarkRead(c)));
+        if (c.HasUnread) m.Items.Add(Item(L("Отметить прочитанным"), () => Tg.MarkRead(c)));
         if (c.Kind != ChatKind.Saved)
-            m.Items.Add(Item(c.Muted ? "Включить звук" : "Без звука", () => Tg.SetMuted(c, !c.Muted)));
-        m.Items.Add(Item("Копировать имя", () => Clipboard.SetText(c.Title)));
+            m.Items.Add(Item(c.Muted ? L("Включить звук") : L("Без звука"), () => Tg.SetMuted(c, !c.Muted)));
+        m.Items.Add(Item(L("Копировать имя"), () => Clipboard.SetText(c.Title)));
     }
 
     void Group_Loaded(object sender, RoutedEventArgs e)
@@ -299,23 +299,23 @@ public partial class ContactListWindow : Window
     {
         var cfg = App.Cfg;
         var m = new ContextMenu { PlacementTarget = MenuBtn, Placement = System.Windows.Controls.Primitives.PlacementMode.Top };
-        var settings = Item("Настройки…", () => App.Current.ShowSettings(), "online");
+        var settings = Item(L("Настройки…"), () => App.Current.ShowSettings(), "online");
         settings.InputGestureText = "Ctrl+P";
         m.Items.Add(settings);
-        m.Items.Add(Item("Мой профиль…", () => App.Current.ShowSettings("profile"), "saved"));
+        m.Items.Add(Item(L("Мой профиль…"), () => App.Current.ShowSettings("profile"), "saved"));
         m.Items.Add(new Separator());
-        m.Items.Add(Check("Скрыть офлайн", cfg.HideOffline, v => { cfg.HideOffline = v; _contacts.Refresh(); }));
-        m.Items.Add(Check("Звуки", cfg.PlaySounds, v => cfg.PlaySounds = v));
-        m.Items.Add(Check("Поверх всех окон", cfg.AlwaysOnTop, v => { cfg.AlwaysOnTop = v; Topmost = v; }));
+        m.Items.Add(Check(L("Скрыть офлайн"), cfg.HideOffline, v => { cfg.HideOffline = v; _contacts.Refresh(); }));
+        m.Items.Add(Check(L("Звуки"), cfg.PlaySounds, v => cfg.PlaySounds = v));
+        m.Items.Add(Check(L("Поверх всех окон"), cfg.AlwaysOnTop, v => { cfg.AlwaysOnTop = v; Topmost = v; }));
         m.Items.Add(new Separator());
-        m.Items.Add(Item("Выйти из аккаунта…", ConfirmLogOut));
-        m.Items.Add(Item("Выход", () => App.Current.Quit()));
+        m.Items.Add(Item(L("Выйти из аккаунта…"), ConfirmLogOut));
+        m.Items.Add(Item(L("Выход"), () => App.Current.Quit()));
         m.IsOpen = true;
     }
 
     public void ConfirmLogOut()
     {
-        if (MessageBox.Show(this, "Выйти из аккаунта Telegram на этом компьютере?", "Aurora",
+        if (MessageBox.Show(this, L("Выйти из аккаунта Telegram на этом компьютере?"), "Aurora",
                 MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             App.Current.LogOut();
     }
@@ -330,8 +330,8 @@ public partial class ContactListWindow : Window
     void Status_Click(object sender, RoutedEventArgs e)
     {
         var m = new ContextMenu { PlacementTarget = StatusBtn, Placement = System.Windows.Controls.Primitives.PlacementMode.Top };
-        m.Items.Add(Item("В сети", () => { App.Current.Invisible = false; UpdateStatusButton(); }, "online"));
-        m.Items.Add(Item("Невидимый", () => { App.Current.Invisible = true; UpdateStatusButton(); }, "invisible"));
+        m.Items.Add(Item(L("В сети"), () => { App.Current.Invisible = false; UpdateStatusButton(); }, "online"));
+        m.Items.Add(Item(L("Невидимый"), () => { App.Current.Invisible = true; UpdateStatusButton(); }, "invisible"));
         m.IsOpen = true;
     }
 

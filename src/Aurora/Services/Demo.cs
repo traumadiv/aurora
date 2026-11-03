@@ -20,37 +20,37 @@ public static class Demo
     {
         On = true;
         var now = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        Tg.InitDemo(new TdApi.User { Id = 1, FirstName = "Вы", LastName = "", PhoneNumber = "79990000000" });
+        Tg.InitDemo(new TdApi.User { Id = 1, FirstName = L("Вы"), LastName = "", PhoneNumber = "79990000000" });
 
-        Contact(2, "Алина", Presence.Online, "в сети", now - 120,
-            ("Привет! Ты видел, у нас теперь ICQ для телеги? :D", false),
-            ("Ага, ставлю прямо сейчас 👍", true),
-            ("Звук помнишь? У меня ностальгия 😢 <3", false));
-        Contact(3, "Дима Котов", Presence.Away, "был(а) 5 мин назад", now - 900,
-            ("Скинь ссылку на репо", false),
-            ("https://github.com/ — как выложу, скину", true));
-        Contact(4, "Мама", Presence.Online, "в сети", now - 3600,
-            ("Ты поел? :)", false), ("Да, мам 😊", true), ("Молодец 🌹", false));
-        Contact(5, "Серёга", Presence.Offline, "был(а) вчера в 23:10", now - 86400,
-            ("Го в субботу? 🍺", true), ("Посмотрим ;)", false));
-        Contact(6, "Катя Белова", Presence.Offline, "был(а) на этой неделе", now - 4 * 86400,
-            ("Спасибо за помощь! 😘", false));
-        Contact(7, "Олег", Presence.Away, "был(а) недавно", now - 7200, ("ок", false));
+        Contact(2, L("Алина"), Presence.Online, L("в сети"), now - 120,
+            (L("Привет! Ты видел, у нас теперь ICQ для телеги? :D"), false),
+            (L("Ага, ставлю прямо сейчас 👍"), true),
+            (L("Звук помнишь? У меня ностальгия 😢 <3"), false));
+        Contact(3, L("Дима Котов"), Presence.Away, L("был(а) 5 мин назад"), now - 900,
+            (L("Скинь ссылку на репо"), false),
+            (L("https://github.com/ — как выложу, скину"), true));
+        Contact(4, L("Мама"), Presence.Online, L("в сети"), now - 3600,
+            (L("Ты поел? :)"), false), (L("Да, мам 😊"), true), (L("Молодец 🌹"), false));
+        Contact(5, L("Серёга"), Presence.Offline, L("был(а) вчера в 23:10"), now - 86400,
+            (L("Го в субботу? 🍺"), true), (L("Посмотрим ;)"), false));
+        Contact(6, L("Катя Белова"), Presence.Offline, L("был(а) на этой неделе"), now - 4 * 86400,
+            (L("Спасибо за помощь! 😘"), false));
+        Contact(7, L("Олег"), Presence.Away, L("был(а) недавно"), now - 7200, (L("ок"), false));
 
-        Chat(10, "Чат двора 🏠", ChatKind.Group, now - 300,
-            (8, "Кто оставил самокат у подъезда?"), (9, "Не я 😐"), (1, "Тоже не я :)"), (8, "Ну кто-то же оставил 😠"));
-        Chat(11, "Работа · фронт", ChatKind.Group, now - 1800,
-            (9, "Деплой в 18:00 🔥"), (1, "Принял 👍"));
-        Chat(12, "Новости технологий", ChatKind.Channel, now - 600,
-            (0, "Вышел .NET 10, что нового 😎"));
-        Chat(13, "Погода бот", ChatKind.Bot, now - 40000, (0, "Сегодня +12, облачно 🙁"));
-        Chat(14, "Избранное", ChatKind.Saved, now - 50000, (1, "Идея: тема Luna Silver"));
+        Chat(10, L("Чат двора 🏠"), ChatKind.Group, now - 300,
+            (8, L("Кто оставил самокат у подъезда?")), (9, L("Не я 😐")), (1, L("Тоже не я :)")), (8, L("Ну кто-то же оставил 😠")));
+        Chat(11, L("Работа · фронт"), ChatKind.Group, now - 1800,
+            (9, L("Деплой в 18:00 🔥")), (1, L("Принял 👍")));
+        Chat(12, L("Новости технологий"), ChatKind.Channel, now - 600,
+            (0, L("Вышел .NET 10, что нового 😎")));
+        Chat(13, L("Погода бот"), ChatKind.Bot, now - 40000, (0, L("Сегодня +12, облачно 🙁")));
+        Chat(14, L("Избранное"), ChatKind.Saved, now - 50000, (1, L("Идея: тема Luna Silver")));
 
-        Tg.DemoUser(8, "Петрович");
-        Tg.DemoUser(9, "Аня");
+        Tg.DemoUser(8, L("Петрович"));
+        Tg.DemoUser(9, L("Аня"));
 
         // Address book: everyone above plus one person you have never written to.
-        Tg.DemoUser(15, "Бабушка", contact: true);
+        Tg.DemoUser(15, L("Бабушка"), contact: true);
         foreach (var id in new long[] { 2, 3, 4, 5, 6, 7, 15 }) Tg.DemoContact(id);
 
         Tg.Chats[10].Unread = 2;
@@ -62,7 +62,7 @@ public static class Demo
         After(1.5, () => { var m = Msg(2, 2, "", Now); m.Content = DemoFormatted(); Deliver(m); });
         After(2, () => { var m = Msg(2, 2, "", Now); m.Content = DemoPhoto(); Deliver(m); });
         After(3, () => { var m = Msg(2, 2, "", Now); m.Content = DemoStickerMessage(); Deliver(m); });
-        After(4, () => Incoming(2, 2, "Ой, это не тебе было 🙈"));
+        After(4, () => Incoming(2, 2, L("Ой, это не тебе было 🙈")));
         After(8, () =>
         {
             var m = History[2].Last(x => !x.IsOutgoing);
@@ -71,8 +71,8 @@ public static class Demo
         });
         After(10, () =>
         {
-            var m = History[2].First(x => !x.IsOutgoing && Text.Describe(x.Content).StartsWith("Звук"));
-            var c = new TdApi.MessageContent.MessageText { Text = new TdApi.FormattedText { Text = "Звук помнишь? Прям ностальгия накрыла 😢 <3", Entities = [] } };
+            var m = History[2].First(x => !x.IsOutgoing && Text.Describe(x.Content) == L("Звук помнишь? У меня ностальгия 😢 <3"));
+            var c = new TdApi.MessageContent.MessageText { Text = new TdApi.FormattedText { Text = L("Звук помнишь? Прям ностальгия накрыла 😢 <3"), Entities = [] } };
             m.Content = c;
             m.EditDate = Now;
             Tg.DemoEdit(2, m.Id, c);
@@ -80,7 +80,7 @@ public static class Demo
 
         // A message from someone else a few seconds in, to show the blinking envelope, tray and sound.
         var t = new DispatcherTimer { Interval = TimeSpan.FromSeconds(6) };
-        t.Tick += (_, _) => { t.Stop(); Incoming(3, 3, "Эй, ты тут? Кинь ссылку, плиз"); };
+        t.Tick += (_, _) => { t.Stop(); Incoming(3, 3, L("Эй, ты тут? Кинь ссылку, плиз")); };
         t.Start();
     }
 
@@ -97,7 +97,7 @@ public static class Demo
     static void Chat(long id, string title, ChatKind kind, int lastDate, params (long from, string text)[] msgs)
     {
         var c = new ChatItem { Id = id, Kind = kind, Title = title };
-        c.StatusText = kind switch { ChatKind.Channel => "1 204 подписчика", ChatKind.Bot => "бот", ChatKind.Saved => "заметки для себя", _ => "12 участников" };
+        c.StatusText = kind switch { ChatKind.Channel => L("1 204 подписчика"), ChatKind.Bot => L("бот"), ChatKind.Saved => L("заметки для себя"), _ => L("12 участников") };
         var list = new List<TdApi.Message>();
         var d = lastDate - msgs.Length * 60;
         foreach (var (from, text) in msgs) list.Add(Msg(id, from == 0 ? -id : from, text, d += 60));
@@ -165,7 +165,7 @@ public static class Demo
         var file = new TdApi.File { Id = 77, Local = new TdApi.LocalFile { Path = path, IsDownloadingCompleted = true } };
         return new TdApi.MessageContent.MessagePhoto
         {
-            Caption = new TdApi.FormattedText { Text = "Смотри, какой закат был :)", Entities = [] },
+            Caption = new TdApi.FormattedText { Text = L("Смотри, какой закат был :)"), Entities = [] },
             Photo = new TdApi.Photo { Sizes = [new TdApi.PhotoSize { Type = "x", Photo = file, Width = w, Height = h }] },
         };
     }
@@ -228,9 +228,10 @@ public static class Demo
 
     static TdApi.MessageContent DemoFormatted()
     {
-        const string text = "Смотри, кастомные эмодзи 😊 теперь живые, а тут спойлер: завтра тусим";
+        var text = L("Смотри, кастомные эмодзи 😊 теперь живые, а тут спойлер: завтра тусим");
         var emoji = text.IndexOf("😊", StringComparison.Ordinal);
-        var spoiler = text.IndexOf("завтра", StringComparison.Ordinal);
+        var bold = text.IndexOf(L("кастомные эмодзи"), StringComparison.Ordinal);
+        var spoiler = text.IndexOf(L("завтра"), StringComparison.Ordinal);
         return new TdApi.MessageContent.MessageText
         {
             Text = new TdApi.FormattedText
@@ -238,7 +239,7 @@ public static class Demo
                 Text = text,
                 Entities =
                 [
-                    new TdApi.TextEntity { Offset = 7, Length = 17, Type = new TdApi.TextEntityType.TextEntityTypeBold() },
+                    new TdApi.TextEntity { Offset = bold, Length = L("кастомные эмодзи").Length, Type = new TdApi.TextEntityType.TextEntityTypeBold() },
                     new TdApi.TextEntity { Offset = emoji, Length = 2, Type = new TdApi.TextEntityType.TextEntityTypeCustomEmoji { CustomEmojiId = 1 } },
                     new TdApi.TextEntity { Offset = spoiler, Length = text.Length - spoiler, Type = new TdApi.TextEntityType.TextEntityTypeSpoiler() },
                 ],
@@ -255,24 +256,24 @@ public static class Demo
             IsFull = true,
             Blocks =
             [
-                new TdApi.PageBlock.PageBlockHeader { Header = P("Планы на субботу") },
+                new TdApi.PageBlock.PageBlockHeader { Header = P(L("Планы на субботу")) },
                 new TdApi.PageBlock.PageBlockParagraph
                 {
                     Text = new TdApi.RichText.RichTexts
                     {
-                        Texts = [P("Собираемся у Димы в "), new TdApi.RichText.RichTextBold { Text = P("16:00") }, P(", берём "),
-                                 new TdApi.RichText.RichTextItalic { Text = P("старые диски") }, P(".")],
+                        Texts = [P(L("Собираемся у Димы в ")), new TdApi.RichText.RichTextBold { Text = P("16:00") }, P(L(", берём ")),
+                                 new TdApi.RichText.RichTextItalic { Text = P(L("старые диски")) }, P(".")],
                     },
                 },
                 new TdApi.PageBlock.PageBlockList
                 {
                     Items =
                     [
-                        new TdApi.PageBlockListItem { HasCheckbox = true, IsChecked = true, Blocks = [new TdApi.PageBlock.PageBlockParagraph { Text = P("Пицца") }] },
-                        new TdApi.PageBlockListItem { HasCheckbox = true, Blocks = [new TdApi.PageBlock.PageBlockParagraph { Text = P("Колонки") }] },
+                        new TdApi.PageBlockListItem { HasCheckbox = true, IsChecked = true, Blocks = [new TdApi.PageBlock.PageBlockParagraph { Text = P(L("Пицца")) }] },
+                        new TdApi.PageBlockListItem { HasCheckbox = true, Blocks = [new TdApi.PageBlock.PageBlockParagraph { Text = P(L("Колонки")) }] },
                     ],
                 },
-                new TdApi.PageBlock.PageBlockPullQuote { Text = P("Кто опоздает, тот ставит музыку"), Credit = P("Дима") },
+                new TdApi.PageBlock.PageBlockPullQuote { Text = P(L("Кто опоздает, тот ставит музыку")), Credit = P(L("Дима")) },
             ],
         },
     };
@@ -293,11 +294,11 @@ public static class Demo
 
         // The other side "reads" it, types for a bit and answers.
         After(0.8, () => Tg.DemoReadOutbox(chatId, m.Id));
-        After(1.2, () => { c.Typing = "печатает…"; });
+        After(1.2, () => { c.Typing = L("печатает…"); });
         After(3.0, () =>
         {
             c.Typing = "";
-            var replies = new[] { "Ахах, точно 😂", "Ну да 👍", "Сейчас гляну :)", "Ого, звучит как раньше! :D", "Ок, договорились ;)", "😎", "Люблю это <3" };
+            var replies = new[] { L("Ахах, точно 😂"), L("Ну да 👍"), L("Сейчас гляну :)"), L("Ого, звучит как раньше! :D"), L("Ок, договорились ;)"), "😎", L("Люблю это <3") };
             var from = c.Kind == ChatKind.Group ? 9 : chatId;
             Incoming(chatId, from, replies[Rnd.Next(replies.Length)]);
         });
@@ -312,7 +313,7 @@ public static class Demo
         if (Tg.Chats.TryGetValue(m.ChatId, out var c))
         {
             Tg.DemoChat(c); // first message to a contact puts the chat into the Chats tab
-            c.LastText = (m.IsOutgoing ? "Вы: " : "") + Text.Describe(m.Content);
+            c.LastText = (m.IsOutgoing ? L("Вы: ") : "") + Text.Describe(m.Content);
             c.LastDate = m.Date;
             c.Order = (long)m.Date << 8 | c.Id;
             if (!m.IsOutgoing && !App.IsChatActive(m.ChatId)) c.Unread++;
@@ -320,18 +321,18 @@ public static class Demo
         Tg.DemoNewMessage(m);
     }
 
-    static string _myBio = "Пишу Aurora 🌼 :)";
+    static string _myBio = L("Пишу Aurora 🌼 :)");
 
     public static void SetMyBio(string bio) => _myBio = bio;
 
     public static string About(long id) => id switch
     {
         1 => _myBio,
-        2 => "Дизайнер. Люблю старые интерфейсы ;)",
-        3 => "frontend · кофе · велик",
-        10 => "Чат жильцов дома 12. Без рекламы, пожалуйста 🙏",
-        12 => "Главное из мира технологий, коротко 🔥",
-        13 => "Пришлю погоду по запросу. Команды: /now, /week",
+        2 => L("Дизайнер. Люблю старые интерфейсы ;)"),
+        3 => L("frontend · кофе · велик"),
+        10 => L("Чат жильцов дома 12. Без рекламы, пожалуйста 🙏"),
+        12 => L("Главное из мира технологий, коротко 🔥"),
+        13 => L("Пришлю погоду по запросу. Команды: /now, /week"),
         _ => "",
     };
 

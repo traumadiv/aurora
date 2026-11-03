@@ -76,23 +76,23 @@ public sealed class ChatItem : INotifyPropertyChanged
             if (LastDate == 0) return "";
             var t = DateTimeOffset.FromUnixTimeSeconds(LastDate).LocalDateTime;
             if (t.Date == DateTime.Today) return t.ToString("HH:mm");
-            if (t.Date == DateTime.Today.AddDays(-1)) return "вчера";
+            if (t.Date == DateTime.Today.AddDays(-1)) return L("вчера");
             return t.Year == DateTime.Today.Year ? t.ToString("dd.MM") : t.ToString("dd.MM.yy");
         }
     }
 
     /// <summary>ICQ split the list into online on top, offline below.</summary>
-    public string ContactGroup => Presence is Presence.Online or Presence.Away ? "В сети" : "Не в сети";
+    public string ContactGroup => Presence is Presence.Online or Presence.Away ? L("В сети") : L("Не в сети");
 
     public void RefreshTime() => Raise(nameof(TimeText));
 
     /// <summary>Contact-list section, ICQ style.</summary>
     public string Group => Kind switch
     {
-        ChatKind.Group => "Группы",
-        ChatKind.Channel => "Каналы",
-        ChatKind.Bot => "Боты",
-        _ => "Контакты",
+        ChatKind.Group => L("Группы"),
+        ChatKind.Channel => L("Каналы"),
+        ChatKind.Bot => L("Боты"),
+        _ => L("Контакты"),
     };
 
     /// <summary>Key of the icon resource drawn next to the name.</summary>

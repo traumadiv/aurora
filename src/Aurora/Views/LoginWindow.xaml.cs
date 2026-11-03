@@ -55,15 +55,15 @@ public partial class LoginWindow : Window
                 break;
             case TdApi.AuthorizationState.AuthorizationStateWaitPassword p:
                 Show(Step.Pass);
-                if (!string.IsNullOrEmpty(p.PasswordHint)) Hint.Text += $"\nПодсказка: {p.PasswordHint}";
+                if (!string.IsNullOrEmpty(p.PasswordHint)) Hint.Text += "\n" + L("Подсказка: {0}", p.PasswordHint);
                 break;
             case TdApi.AuthorizationState.AuthorizationStateWaitRegistration:
                 Show(Step.Phone);
-                Error.Text = "Этот номер ещё не зарегистрирован в Telegram. Создайте аккаунт в официальном приложении, потом войдите здесь.";
+                Error.Text = L("Этот номер ещё не зарегистрирован в Telegram. Создайте аккаунт в официальном приложении, потом войдите здесь.");
                 break;
             default:
                 Show(Step.Wait);
-                Error.Text = "Этот способ входа пока не поддерживается: " + s.GetType().Name.Replace("AuthorizationState", "");
+                Error.Text = L("Этот способ входа пока не поддерживается: ") + s.GetType().Name.Replace("AuthorizationState", "");
                 break;
         }
     }
@@ -73,13 +73,13 @@ public partial class LoginWindow : Window
         if (Config.HasBuiltInKeys)
         {
             Show(Step.Wait);
-            Error.Text = "Telegram отклонил ключи этой сборки: " + err;
+            Error.Text = L("Telegram отклонил ключи этой сборки: ") + err;
             return;
         }
         Show(Step.Api);
         ApiId.Text = App.Cfg.ApiId > 0 ? App.Cfg.ApiId.ToString() : "";
         ApiHash.Text = App.Cfg.ApiHash;
-        Error.Text = "Telegram не принял ключи: " + err;
+        Error.Text = L("Telegram не принял ключи: ") + err;
     }
 
     void ShowCode(TdApi.AuthenticationCodeInfo info)
@@ -89,19 +89,19 @@ public partial class LoginWindow : Window
         (_codeLength, Hint.Text) = info.Type switch
         {
             TdApi.AuthenticationCodeType.AuthenticationCodeTypeTelegramMessage t =>
-                (t.Length, $"Мы отправили код в приложение Telegram на другом вашем устройстве ({phone})."),
-            TdApi.AuthenticationCodeType.AuthenticationCodeTypeSms s => (s.Length, $"Мы отправили SMS с кодом на {phone}."),
-            TdApi.AuthenticationCodeType.AuthenticationCodeTypeCall c => (c.Length, $"Вам позвонят на {phone} и продиктуют код."),
-            _ => (0, $"Код отправлен на {phone}."),
+                (t.Length, L("Мы отправили код в приложение Telegram на другом вашем устройстве ({0}).", phone)),
+            TdApi.AuthenticationCodeType.AuthenticationCodeTypeSms s => (s.Length, L("Мы отправили SMS с кодом на {0}.", phone)),
+            TdApi.AuthenticationCodeType.AuthenticationCodeTypeCall c => (c.Length, L("Вам позвонят на {0} и продиктуют код.", phone)),
+            _ => (0, L("Код отправлен на {0}.", phone)),
         };
         Code.Clear();
 
         ResendText.Text = info.NextType switch
         {
-            TdApi.AuthenticationCodeType.AuthenticationCodeTypeSms => "Отправить код по SMS",
-            TdApi.AuthenticationCodeType.AuthenticationCodeTypeCall => "Позвонить мне",
+            TdApi.AuthenticationCodeType.AuthenticationCodeTypeSms => L("Отправить код по SMS"),
+            TdApi.AuthenticationCodeType.AuthenticationCodeTypeCall => L("Позвонить мне"),
             null => "",
-            _ => "Отправить код другим способом",
+            _ => L("Отправить код другим способом"),
         };
         _resendIn = info.NextType == null ? 0 : info.Timeout;
         TickResend();
@@ -114,7 +114,7 @@ public partial class LoginWindow : Window
         if (_resendIn > 0)
         {
             ResendLink.IsEnabled = false;
-            ResendTimer.Text = $"Повторно через {_resendIn / 60}:{_resendIn % 60:00}";
+            ResendTimer.Text = L("Повторно через {0}:{1:00}", _resendIn / 60, _resendIn % 60);
             _resendIn--;
         }
         else
@@ -135,17 +135,17 @@ public partial class LoginWindow : Window
         ApiStep.Visibility = step == Step.Api ? Visibility.Visible : Visibility.Collapsed;
         BackBtn.Visibility = step is Step.Code or Step.Pass ? Visibility.Visible : Visibility.Collapsed;
         NextBtn.IsEnabled = step != Step.Wait;
-        Busy.Text = step == Step.Wait ? "Подключаюсь…" : "";
+        Busy.Text = step == Step.Wait ? L("Подключаюсь…") : "";
         Error.Text = "";
         if (step != Step.Code) _timer.Stop();
         (Heading.Text, Hint.Text) = step switch
         {
-            Step.Phone => ("Вход в Telegram", "Подтвердите код страны и введите свой номер телефона."),
-            Step.Code => ("Код подтверждения", ""),
-            Step.Pass => ("Двухэтапная проверка", "На аккаунте включён облачный пароль. Введите его."),
-            Step.Api => ("Ключи приложения",
-                "Эта сборка Aurora сделана без встроенных ключей Telegram API. Получите свои на my.telegram.org, это бесплатно."),
-            _ => ("Подключение", "Секунду…"),
+            Step.Phone => (L("Вход в Telegram"), L("Подтвердите код страны и введите свой номер телефона.")),
+            Step.Code => (L("Код подтверждения"), ""),
+            Step.Pass => (L("Двухэтапная проверка"), L("На аккаунте включён облачный пароль. Введите его.")),
+            Step.Api => (L("Ключи приложения"),
+                L("Эта сборка Aurora сделана без встроенных ключей Telegram API. Получите свои на my.telegram.org, это бесплатно.")),
+            _ => (L("Подключение"), L("Секунду…")),
         };
         Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
         {
@@ -191,14 +191,14 @@ public partial class LoginWindow : Window
         Error.Text = "";
         _submitting = true;
         NextBtn.IsEnabled = false;
-        Busy.Text = "Проверяю…";
+        Busy.Text = L("Проверяю…");
         try
         {
             switch (_step)
             {
                 case Step.Phone:
                     var phone = new string(Phone.Text.Where(char.IsDigit).ToArray());
-                    if (phone.Length < 7) throw new InvalidOperationException("Введите номер полностью, вместе с кодом страны.");
+                    if (phone.Length < 7) throw new InvalidOperationException(L("Введите номер полностью, вместе с кодом страны."));
                     await Tg.Client.ExecuteAsync(new TdApi.SetAuthenticationPhoneNumber { PhoneNumber = "+" + phone });
                     break;
                 case Step.Code:
@@ -209,7 +209,7 @@ public partial class LoginWindow : Window
                     break;
                 case Step.Api:
                     if (!int.TryParse(ApiId.Text.Trim(), out var id) || ApiHash.Text.Trim().Length < 16)
-                        throw new InvalidOperationException("api_id — число, api_hash — строка из 32 символов.");
+                        throw new InvalidOperationException(L("api_id — число, api_hash — строка из 32 символов."));
                     App.Cfg.ApiId = id;
                     App.Cfg.ApiHash = ApiHash.Text.Trim();
                     App.Cfg.Save();
@@ -218,7 +218,7 @@ public partial class LoginWindow : Window
                     App.Current.StartClient();
                     return;
             }
-            Busy.Text = "Подождите…";
+            Busy.Text = L("Подождите…");
             // The next auth state arrives as an update and moves the wizard on; if TDLib re-sends the
             // same state (e.g. after "Назад"), let the user try again.
             _ = Task.Delay(4000).ContinueWith(_ => Dispatcher.Invoke(() =>
@@ -245,13 +245,13 @@ public partial class LoginWindow : Window
 
     static string Humanize(string err) => err switch
     {
-        "PHONE_NUMBER_INVALID" => "Неверный номер телефона.",
-        "PHONE_NUMBER_BANNED" => "Этот номер заблокирован в Telegram.",
-        "PHONE_CODE_INVALID" => "Неверный код.",
-        "PHONE_CODE_EXPIRED" => "Код устарел, запросите новый.",
-        "PASSWORD_HASH_INVALID" => "Неверный пароль.",
-        "API_ID_INVALID" => "Неверные api_id/api_hash.",
-        _ when err.StartsWith("FLOOD_WAIT") || err.StartsWith("Too Many Requests") => "Слишком много попыток, подождите немного.",
+        "PHONE_NUMBER_INVALID" => L("Неверный номер телефона."),
+        "PHONE_NUMBER_BANNED" => L("Этот номер заблокирован в Telegram."),
+        "PHONE_CODE_INVALID" => L("Неверный код."),
+        "PHONE_CODE_EXPIRED" => L("Код устарел, запросите новый."),
+        "PASSWORD_HASH_INVALID" => L("Неверный пароль."),
+        "API_ID_INVALID" => L("Неверные api_id/api_hash."),
+        _ when err.StartsWith("FLOOD_WAIT") || err.StartsWith("Too Many Requests") => L("Слишком много попыток, подождите немного."),
         _ => err,
     };
 

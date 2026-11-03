@@ -153,7 +153,7 @@ public static class MessageText
         s.Background = bar;
         s.Foreground = bar;
         s.Cursor = Cursors.Hand;
-        s.ToolTip = "Спойлер: нажмите, чтобы показать";
+        s.ToolTip = L("Спойлер: нажмите, чтобы показать");
         s.MouseLeftButtonUp += (_, _) =>
         {
             s.ClearValue(TextElement.BackgroundProperty);
@@ -279,13 +279,13 @@ public static class MessageText
             case TdApi.PageBlock.PageBlockSlideshow x: return Many(to, x.Blocks, x.Caption, photo, depth);
             case TdApi.PageBlock.PageBlockCover x: return Block(to, x.Cover, photo, depth);
             case TdApi.PageBlock.PageBlockAnimation x: return Tag(to, "[GIF]", x.Caption);
-            case TdApi.PageBlock.PageBlockVideo x: return Tag(to, "[Видео]", x.Caption);
-            case TdApi.PageBlock.PageBlockAudio x: return Tag(to, "[Музыка]", x.Caption);
-            case TdApi.PageBlock.PageBlockVoiceNote x: return Tag(to, "[Голосовое]", x.Caption);
-            case TdApi.PageBlock.PageBlockDocument x: return Tag(to, "[Файл: " + x.Document?.FileName + "]", x.Caption);
-            case TdApi.PageBlock.PageBlockMap x: return Tag(to, "[Карта]", x.Caption);
+            case TdApi.PageBlock.PageBlockVideo x: return Tag(to, L("[Видео]"), x.Caption);
+            case TdApi.PageBlock.PageBlockAudio x: return Tag(to, L("[Музыка]"), x.Caption);
+            case TdApi.PageBlock.PageBlockVoiceNote x: return Tag(to, L("[Голосовое]"), x.Caption);
+            case TdApi.PageBlock.PageBlockDocument x: return Tag(to, L("[Файл: {0}]", x.Document?.FileName), x.Caption);
+            case TdApi.PageBlock.PageBlockMap x: return Tag(to, L("[Карта]"), x.Caption);
             case TdApi.PageBlock.PageBlockEmbedded x:
-                to.Add(Link(new Run(x.Url), x.Url) ?? (Inline)new Run("[Встроенное содержимое]"));
+                to.Add(Link(new Run(x.Url), x.Url) ?? (Inline)new Run(L("[Встроенное содержимое]")));
                 Caption(to, x.Caption);
                 return true;
             case TdApi.PageBlock.PageBlockEmbeddedPost x:

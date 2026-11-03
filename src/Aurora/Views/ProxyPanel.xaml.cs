@@ -15,7 +15,7 @@ public partial class ProxyPanel : UserControl
         ListView.ItemsSource = Proxies.List;
         UseSystem.IsChecked = App.Cfg.UseSystemProxy;
         var sys = Proxies.ReadSystem();
-        UseSystem.ToolTip = sys != null ? $"Сейчас в Windows: {sys.Kind} {sys.Server}:{sys.Port}" : "Сейчас в Windows прокси не включён";
+        UseSystem.ToolTip = sys != null ? $"Сейчас в Windows: {sys.Kind} {sys.Server}:{sys.Port}" : L("Сейчас в Windows прокси не включён");
         Loaded += async (_, _) =>
         {
             // A proxy link copied from a channel or a browser is what people usually have: offer it right away.
@@ -35,7 +35,7 @@ public partial class ProxyPanel : UserControl
         App.Cfg.UseSystemProxy = UseSystem.IsChecked == true;
         if (!Demo.On) App.Cfg.Save();
         await Run(() => Proxies.ApplySystem(App.Cfg.UseSystemProxy),
-            App.Cfg.UseSystemProxy ? (Proxies.ReadSystem() is { } s ? $"Подключаемся через системный прокси {s.Server}:{s.Port}." : "В Windows сейчас нет прокси.") : "Системный прокси больше не используется.");
+            App.Cfg.UseSystemProxy ? (Proxies.ReadSystem() is { } s ? $"Подключаемся через системный прокси {s.Server}:{s.Port}." : L("В Windows сейчас нет прокси.")) : L("Системный прокси больше не используется."));
     }
 
     ProxyEntry? Selected => ListView.SelectedItem as ProxyEntry;
@@ -47,13 +47,13 @@ public partial class ProxyPanel : UserControl
             await act();
             if (done != null) Status.Text = done;
         }
-        catch (TdException ex) { Status.Text = "Ошибка: " + (ex.Error?.Message ?? ex.Message); }
-        catch (Exception ex) { Status.Text = "Ошибка: " + ex.Message; }
+        catch (TdException ex) { Status.Text = L("Ошибка: ") + (ex.Error?.Message ?? ex.Message); }
+        catch (Exception ex) { Status.Text = L("Ошибка: ") + ex.Message; }
     }
 
     async Task Add(ProxyEntry e)
     {
-        await Run(() => Proxies.Add(e), $"Прокси {e.Title} добавлен и включён.");
+        await Run(() => Proxies.Add(e), L("Прокси {0} добавлен и включён.", e.Title));
         ListView.SelectedItem = Proxies.List.FirstOrDefault(p => p.Server == e.Server && p.Port == e.Port);
         if (Selected != null) await Proxies.Ping(Selected);
     }
@@ -63,7 +63,7 @@ public partial class ProxyPanel : UserControl
         var p = Proxies.Parse(LinkBox.Text);
         if (p == null)
         {
-            Status.Text = "Это не похоже на ссылку прокси. Пример: tg://proxy?server=1.2.3.4&port=443&secret=…";
+            Status.Text = L("Это не похоже на ссылку прокси. Пример: tg://proxy?server=1.2.3.4&port=443&secret=…");
             return;
         }
         await Add(p);
@@ -79,7 +79,7 @@ public partial class ProxyPanel : UserControl
     {
         if (SecretBox == null) return;
         var socks = KindSocks.IsChecked == true;
-        SecretLabel.Text = socks ? "Логин:" : "Секрет:";
+        SecretLabel.Text = socks ? L("Логин:") : L("Секрет:");
         SecretBox.Visibility = socks ? Visibility.Collapsed : Visibility.Visible;
         UserBox.Visibility = PassBox.Visibility = PassLabel.Visibility = socks ? Visibility.Visible : Visibility.Collapsed;
         if (PortBox.Text is "443" or "1080") PortBox.Text = socks ? "1080" : "443";
@@ -90,12 +90,12 @@ public partial class ProxyPanel : UserControl
         var socks = KindSocks.IsChecked == true;
         if (!int.TryParse(PortBox.Text.Trim(), out var port) || port is <= 0 or > 65535 || ServerBox.Text.Trim().Length == 0)
         {
-            Status.Text = "Укажите сервер и порт.";
+            Status.Text = L("Укажите сервер и порт.");
             return;
         }
         if (!socks && SecretBox.Text.Trim().Length < 16)
         {
-            Status.Text = "У MTProto-прокси должен быть секрет (обычно 32 символа или длинная строка, начинающаяся с ee).";
+            Status.Text = L("У MTProto-прокси должен быть секрет (обычно 32 символа или длинная строка, начинающаяся с ee).");
             return;
         }
         await Add(new ProxyEntry
@@ -107,13 +107,13 @@ public partial class ProxyPanel : UserControl
 
     async void Use_Click(object sender, RoutedEventArgs e)
     {
-        if (Selected is { } p) await Run(() => Proxies.Enable(p), $"Подключаемся через {p.Title}.");
+        if (Selected is { } p) await Run(() => Proxies.Enable(p), L("Подключаемся через {0}.", p.Title));
     }
 
     void List_DoubleClick(object sender, MouseButtonEventArgs e) => Use_Click(sender, e);
 
     async void Off_Click(object sender, RoutedEventArgs e) =>
-        await Run(Proxies.Disable, "Прокси выключен, соединение напрямую.");
+        await Run(Proxies.Disable, L("Прокси выключен, соединение напрямую."));
 
     async void Ping_Click(object sender, RoutedEventArgs e)
     {
@@ -125,11 +125,11 @@ public partial class ProxyPanel : UserControl
     {
         if (Selected is not { } p) return;
         Clipboard.SetText(p.Link);
-        Status.Text = "Ссылка скопирована: её можно отправить другу.";
+        Status.Text = L("Ссылка скопирована: её можно отправить другу.");
     }
 
     async void Remove_Click(object sender, RoutedEventArgs e)
     {
-        if (Selected is { } p) await Run(() => Proxies.Remove(p), $"Прокси {p.Title} удалён.");
+        if (Selected is { } p) await Run(() => Proxies.Remove(p), L("Прокси {0} удалён.", p.Title));
     }
 }

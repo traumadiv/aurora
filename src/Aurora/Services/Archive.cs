@@ -125,7 +125,7 @@ public static class Archive
         var r = new ArchivedMessage
         {
             Id = m.Id, ChatId = m.ChatId, Date = m.Date, Out = m.IsOutgoing, Text = text,
-            Sender = m.IsOutgoing ? "Вы" : Tg.SenderName(m.SenderId), SenderKey = Key(m.SenderId),
+            Sender = m.IsOutgoing ? L("Вы") : Tg.SenderName(m.SenderId), SenderKey = Key(m.SenderId),
         };
         d[m.Id] = r;
         Save(r);
@@ -181,5 +181,63 @@ public static class Archive
     {
         _chats.Clear();
         try { if (Directory.Exists(Dir)) Directory.Delete(Dir, true); } catch { }
+    }
+
+    /// <summary>How long the archive keeps messages, in days. 0 keeps them forever.</summary>
+    public static readonly int[] KeepChoices = [1, 7, 30, 90, 365, 0];
+
+    /// <summary>
+    /// Drops what is older than the keep period: ordinary messages by their date,
+    /// deleted ones by the moment they were deleted, so a fresh deletion of an old message is still shown.
+    /// Returns how many messages were removed.
+    /// </summary>
+    public static int Cleanup(int days)
+    {
+        if (days <= 0 || Demo.On || !Directory.Exists(Dir)) return 0;
+        var cutoff = (int)DateTimeOffset.UtcNow.AddDays(-days).ToUnixTimeSeconds();
+        var removed = 0;
+        foreach (var file in Directory.GetFiles(Dir, "*.jsonl"))
+        {
+            if (!long.TryParse(Path.GetFileNameWithoutExtension(file), out var chatId)) continue;
+            var d = Chat(chatId);
+            var old = d.Values.Where(r => (r.Deleted ? r.DeletedAt : r.Date) < cutoff).Select(r => r.Id).ToList();
+            if (old.Count == 0) continue;
+            foreach (var id in old) d.Remove(id);
+            removed += old.Count;
+            if (d.Count == 0)
+            {
+                _chats.Remove(chatId);
+                try { File.Delete(file); } catch { }
+            }
+            else Rewrite(chatId, d.Values);
+        }
+        return removed;
+    }
+
+    /// <summary>Size of the archive folder on disk and the number of chats in it.</summary>
+    public static (long Bytes, int Chats) Usage()
+    {
+        if (!Directory.Exists(Dir)) return (0, 0);
+        var files = new DirectoryInfo(Dir).GetFiles("*.jsonl");
+        return (files.Sum(f => f.Length), files.Length);
+    }
+
+    static System.Windows.Threading.DispatcherTimer? _cleaner;
+
+    /// <summary>Cleans up shortly after start and then every few hours while Aurora runs.</summary>
+    public static void StartCleaner()
+    {
+        if (_cleaner != null || Demo.On) return;
+        void Run() { try { Cleanup(App.Cfg?.ArchiveDays ?? 0); } catch { } }
+        _cleaner = new System.Windows.Threading.DispatcherTimer(System.Windows.Threading.DispatcherPriority.ApplicationIdle)
+        {
+            Interval = TimeSpan.FromSeconds(20),
+        };
+        _cleaner.Tick += (_, _) =>
+        {
+            _cleaner.Interval = TimeSpan.FromHours(4);
+            Run();
+        };
+        _cleaner.Start();
     }
 }

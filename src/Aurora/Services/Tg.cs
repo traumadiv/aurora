@@ -149,10 +149,10 @@ public static class Tg
             case TdApi.Update.UpdateConnectionState cs:
                 Connection = cs.State switch
                 {
-                    TdApi.ConnectionState.ConnectionStateWaitingForNetwork => "Нет сети…",
-                    TdApi.ConnectionState.ConnectionStateConnectingToProxy => "Подключение к прокси…",
-                    TdApi.ConnectionState.ConnectionStateConnecting => "Подключение…",
-                    TdApi.ConnectionState.ConnectionStateUpdating => "Обновление…",
+                    TdApi.ConnectionState.ConnectionStateWaitingForNetwork => L("Нет сети…"),
+                    TdApi.ConnectionState.ConnectionStateConnectingToProxy => L("Подключение к прокси…"),
+                    TdApi.ConnectionState.ConnectionStateConnecting => L("Подключение…"),
+                    TdApi.ConnectionState.ConnectionStateUpdating => L("Обновление…"),
                     _ => "",
                 };
                 ConnectionChanged?.Invoke(Connection);
@@ -286,17 +286,17 @@ public static class Tg
         if (u.Id == MyId && MyId != 0)
         {
             c.Kind = ChatKind.Saved;
-            c.Title = "Избранное";
-            c.StatusText = "заметки для себя";
+            c.Title = L("Избранное");
+            c.StatusText = L("заметки для себя");
             return;
         }
         if (u.Type is TdApi.UserType.UserTypeBot)
         {
             c.Kind = ChatKind.Bot;
-            c.StatusText = "бот";
+            c.StatusText = L("бот");
             return;
         }
-        if (u.Type is TdApi.UserType.UserTypeDeleted) c.Title = "Удалённый аккаунт";
+        if (u.Type is TdApi.UserType.UserTypeDeleted) c.Title = L("Удалённый аккаунт");
         ApplyStatus(c, u.Status);
     }
 
@@ -308,27 +308,27 @@ public static class Tg
         {
             case TdApi.UserStatus.UserStatusOnline:
                 c.Presence = Presence.Online;
-                c.StatusText = "в сети";
+                c.StatusText = L("в сети");
                 break;
             case TdApi.UserStatus.UserStatusOffline off:
                 c.Presence = now - off.WasOnline < 15 * 60 ? Presence.Away : Presence.Offline;
-                c.StatusText = "был(а) " + Text.WasOnline(off.WasOnline);
+                c.StatusText = L("был(а) ") + Text.WasOnline(off.WasOnline);
                 break;
             case TdApi.UserStatus.UserStatusRecently:
                 c.Presence = Presence.Away;
-                c.StatusText = "был(а) недавно";
+                c.StatusText = L("был(а) недавно");
                 break;
             case TdApi.UserStatus.UserStatusLastWeek:
                 c.Presence = Presence.Offline;
-                c.StatusText = "был(а) на этой неделе";
+                c.StatusText = L("был(а) на этой неделе");
                 break;
             case TdApi.UserStatus.UserStatusLastMonth:
                 c.Presence = Presence.Offline;
-                c.StatusText = "был(а) в этом месяце";
+                c.StatusText = L("был(а) в этом месяце");
                 break;
             default:
                 c.Presence = Presence.Offline;
-                c.StatusText = "был(а) давно";
+                c.StatusText = L("был(а) давно");
                 break;
         }
     }
@@ -349,7 +349,7 @@ public static class Tg
     static void ApplyLast(ChatItem c, TdApi.Message? m)
     {
         if (m == null) return;
-        var who = m.IsOutgoing ? "Вы: " : c.Kind == ChatKind.Group ? SenderShort(m.SenderId) + ": " : "";
+        var who = m.IsOutgoing ? L("Вы: ") : c.Kind == ChatKind.Group ? SenderShort(m.SenderId) + ": " : "";
         c.LastText = who + Text.Describe(m.Content);
         c.LastDate = m.Date;
         c.LastMessageId = m.Id;
@@ -360,13 +360,13 @@ public static class Tg
         if (a.Action is TdApi.ChatAction.ChatActionCancel) { c.Typing = ""; _typingSince.Remove(c.Id); return; }
         var verb = a.Action switch
         {
-            TdApi.ChatAction.ChatActionTyping => "печатает…",
-            TdApi.ChatAction.ChatActionRecordingVoiceNote => "записывает голосовое…",
-            TdApi.ChatAction.ChatActionRecordingVideoNote => "записывает кружок…",
-            TdApi.ChatAction.ChatActionUploadingPhoto => "отправляет фото…",
-            TdApi.ChatAction.ChatActionUploadingDocument => "отправляет файл…",
-            TdApi.ChatAction.ChatActionChoosingSticker => "выбирает стикер…",
-            _ => "что-то делает…",
+            TdApi.ChatAction.ChatActionTyping => L("печатает…"),
+            TdApi.ChatAction.ChatActionRecordingVoiceNote => L("записывает голосовое…"),
+            TdApi.ChatAction.ChatActionRecordingVideoNote => L("записывает кружок…"),
+            TdApi.ChatAction.ChatActionUploadingPhoto => L("отправляет фото…"),
+            TdApi.ChatAction.ChatActionUploadingDocument => L("отправляет файл…"),
+            TdApi.ChatAction.ChatActionChoosingSticker => L("выбирает стикер…"),
+            _ => L("что-то делает…"),
         };
         c.Typing = c.Kind == ChatKind.Group ? SenderShort(a.SenderId) + " " + verb : verb;
         _typingSince[c.Id] = DateTime.UtcNow;
@@ -401,7 +401,7 @@ public static class Tg
     public static string SenderName(TdApi.MessageSender? s) => s switch
     {
         TdApi.MessageSender.MessageSenderUser u => UserName(u.UserId),
-        TdApi.MessageSender.MessageSenderChat c => Chats.TryGetValue(c.ChatId, out var ch) ? ch.Title : "Канал",
+        TdApi.MessageSender.MessageSenderChat c => Chats.TryGetValue(c.ChatId, out var ch) ? ch.Title : L("Канал"),
         _ => "",
     };
 

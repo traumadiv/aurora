@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -40,6 +40,7 @@ public partial class App : Application
         }
 
         Cfg = Config.Load();
+        Loc.Init(e.Args.FirstOrDefault(a => a.StartsWith("--lang="))?[7..] ?? Cfg.Language);
         var forced = e.Args.FirstOrDefault(a => a.StartsWith("--skin="))?[7..] ?? (e.Args.Contains("--aero") ? "aero" : null);
         ApplySkin(forced ?? Cfg.Skin, rebuild: false);
         // screenshots: --accent=#RRGGBB recolors the skin for this run only (demo never saves the config)
@@ -78,6 +79,7 @@ public partial class App : Application
         }
         else if (Cfg.HasApi) Tg.Start(Cfg);
         else ShowLogin();
+        if (!Demo.On) Archive.StartCleaner();
     }
 
     /// <summary>Called by the login window once api_id/api_hash are entered.</summary>
@@ -330,12 +332,12 @@ public partial class App : Application
         var msg = Icons.TrayIcon("msg");
         _tray = new Forms.NotifyIcon { Icon = online, Text = "Aurora", Visible = true };
         var menu = new Forms.ContextMenuStrip();
-        menu.Items.Add("Контакт-лист", null, (_, _) => ShowList());
-        menu.Items.Add("Настройки…", null, (_, _) => ShowSettings());
-        menu.Items.Add("В сети", null, (_, _) => Invisible = false);
-        menu.Items.Add("Невидимый", null, (_, _) => Invisible = true);
+        menu.Items.Add(L("Контакт-лист"), null, (_, _) => ShowList());
+        menu.Items.Add(L("Настройки…"), null, (_, _) => ShowSettings());
+        menu.Items.Add(L("В сети"), null, (_, _) => Invisible = false);
+        menu.Items.Add(L("Невидимый"), null, (_, _) => Invisible = true);
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add("Выход", null, (_, _) => Quit());
+        menu.Items.Add(L("Выход"), null, (_, _) => Quit());
         _tray.ContextMenuStrip = menu;
         _tray.MouseClick += (_, e) =>
         {
@@ -362,9 +364,24 @@ public partial class App : Application
         Shutdown();
     }
 
+    bool _restart;
+
+    /// <summary>Closes TDLib cleanly and starts Aurora again, for a new interface language.</summary>
+    public void Restart()
+    {
+        _restart = true;
+        Quit();
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
         _tray?.Dispose();
+        if (_restart && Environment.ProcessPath is { } exe)
+        {
+            _single?.Dispose(); // let the new instance take the single-instance lock
+            _single = null;
+            try { System.Diagnostics.Process.Start(exe, Demo.On ? "--demo --lang=" + Cfg.Language : ""); } catch { }
+        }
         base.OnExit(e);
     }
 
@@ -386,6 +403,7 @@ public partial class App : Application
     /// <summary>Wires the caption buttons drawn by the XpWindow template.</summary>
     public static void Chrome(Window w)
     {
+        Loc.Apply(w);
         w.CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand, (_, _) => w.Close()));
         w.CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, (_, _) => SystemCommands.MinimizeWindow(w)));
     }

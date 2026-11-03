@@ -10,10 +10,10 @@ public static class Text
     {
         var t = Local(unix);
         var mins = (DateTime.Now - t).TotalMinutes;
-        if (mins < 1) return "только что";
-        if (mins < 60) return $"{(int)mins} мин назад";
-        if (t.Date == DateTime.Today) return "в " + t.ToString("HH:mm");
-        if (t.Date == DateTime.Today.AddDays(-1)) return "вчера в " + t.ToString("HH:mm");
+        if (mins < 1) return L("только что");
+        if (mins < 60) return L("{0} мин назад", (int)mins);
+        if (t.Date == DateTime.Today) return L("в ") + t.ToString("HH:mm");
+        if (t.Date == DateTime.Today.AddDays(-1)) return L("вчера в ") + t.ToString("HH:mm");
         return t.ToString("dd.MM.yy");
     }
 
@@ -78,8 +78,8 @@ public static class Text
         TdApi.PageBlock.PageBlockBlockQuote x => string.Join("\n", x.Blocks.Select(BlockPlain)),
         TdApi.PageBlock.PageBlockList x => string.Join("\n", x.Items.Select(i => "• " + string.Join(" ", i.Blocks.Select(BlockPlain)))),
         TdApi.PageBlock.PageBlockDetails x => RichPlain(x.Header),
-        TdApi.PageBlock.PageBlockPhoto => "[Фото]",
-        TdApi.PageBlock.PageBlockVideo => "[Видео]",
+        TdApi.PageBlock.PageBlockPhoto => L("[Фото]"),
+        TdApi.PageBlock.PageBlockVideo => L("[Видео]"),
         _ => "",
     };
 
@@ -87,53 +87,53 @@ public static class Text
     {
         var text = RichPlain(m);
         var line = text.Split('\n').FirstOrDefault(l => l.Trim().Length > 0)?.Trim() ?? "";
-        return line.Length > 0 ? line : "[Сообщение]";
+        return line.Length > 0 ? line : L("[Сообщение]");
     }
 
     public static string Describe(TdApi.MessageContent? c) => c switch
     {
         null => "",
         TdApi.MessageContent.MessageText t => t.Text.Text,
-        TdApi.MessageContent.MessagePhoto p => Cap(p.Caption, "[Фото]"),
-        TdApi.MessageContent.MessageVideo v => Cap(v.Caption, "[Видео]"),
+        TdApi.MessageContent.MessagePhoto p => Cap(p.Caption, L("[Фото]")),
+        TdApi.MessageContent.MessageVideo v => Cap(v.Caption, L("[Видео]")),
         TdApi.MessageContent.MessageAnimation a => Cap(a.Caption, "[GIF]"),
-        TdApi.MessageContent.MessageAudio au => Cap(au.Caption, "[Музыка]"),
-        TdApi.MessageContent.MessageDocument d => Cap(d.Caption, $"[Файл: {d.Document.FileName}]"),
-        TdApi.MessageContent.MessageVoiceNote vn => Cap(vn.Caption, "[Голосовое]"),
-        TdApi.MessageContent.MessageVideoNote => "[Кружок]",
-        TdApi.MessageContent.MessageSticker s => $"[Стикер {s.Sticker.Emoji}]",
+        TdApi.MessageContent.MessageAudio au => Cap(au.Caption, L("[Музыка]")),
+        TdApi.MessageContent.MessageDocument d => Cap(d.Caption, L("[Файл: {0}]", d.Document.FileName)),
+        TdApi.MessageContent.MessageVoiceNote vn => Cap(vn.Caption, L("[Голосовое]")),
+        TdApi.MessageContent.MessageVideoNote => L("[Кружок]"),
+        TdApi.MessageContent.MessageSticker s => L("[Стикер {0}]", s.Sticker.Emoji),
         TdApi.MessageContent.MessageAnimatedEmoji e => e.Emoji,
-        TdApi.MessageContent.MessageContact => "[Контакт]",
-        TdApi.MessageContent.MessageLocation => "[Геолокация]",
-        TdApi.MessageContent.MessageVenue => "[Место]",
-        TdApi.MessageContent.MessagePoll => "[Опрос]",
+        TdApi.MessageContent.MessageContact => L("[Контакт]"),
+        TdApi.MessageContent.MessageLocation => L("[Геолокация]"),
+        TdApi.MessageContent.MessageVenue => L("[Место]"),
+        TdApi.MessageContent.MessagePoll => L("[Опрос]"),
         TdApi.MessageContent.MessageDice d => d.Emoji,
-        TdApi.MessageContent.MessageCall => "[Звонок]",
-        TdApi.MessageContent.MessageChatAddMembers => "* добавил(а) участников",
-        TdApi.MessageContent.MessageChatJoinByLink => "* вступил(а) по ссылке",
-        TdApi.MessageContent.MessageChatDeleteMember => "* покинул(а) чат",
-        TdApi.MessageContent.MessageChatChangeTitle ct => "* новое название: " + ct.Title,
-        TdApi.MessageContent.MessageChatChangePhoto => "* новое фото чата",
-        TdApi.MessageContent.MessagePinMessage => "* закрепил(а) сообщение",
-        TdApi.MessageContent.MessageContactRegistered => "* теперь в Telegram!",
+        TdApi.MessageContent.MessageCall => L("[Звонок]"),
+        TdApi.MessageContent.MessageChatAddMembers => L("* добавил(а) участников"),
+        TdApi.MessageContent.MessageChatJoinByLink => L("* вступил(а) по ссылке"),
+        TdApi.MessageContent.MessageChatDeleteMember => L("* покинул(а) чат"),
+        TdApi.MessageContent.MessageChatChangeTitle ct => L("* новое название: ") + ct.Title,
+        TdApi.MessageContent.MessageChatChangePhoto => L("* новое фото чата"),
+        TdApi.MessageContent.MessagePinMessage => L("* закрепил(а) сообщение"),
+        TdApi.MessageContent.MessageContactRegistered => L("* теперь в Telegram!"),
         TdApi.MessageContent.MessageRichMessage r => RichPreview(r.Message),
-        TdApi.MessageContent.MessageSupergroupChatCreate g => $"* создал(а) группу «{NoEmoji(g.Title)}»",
-        TdApi.MessageContent.MessageBasicGroupChatCreate g => $"* создал(а) группу «{NoEmoji(g.Title)}»",
-        TdApi.MessageContent.MessageChatUpgradeTo => "* группа стала супергруппой",
-        TdApi.MessageContent.MessageChatUpgradeFrom => "* группа стала супергруппой",
-        TdApi.MessageContent.MessageScreenshotTaken => "* сделал(а) скриншот",
-        TdApi.MessageContent.MessageChatSetMessageAutoDeleteTime => "* изменил(а) автоудаление сообщений",
-        TdApi.MessageContent.MessageForumTopicCreated => "* создал(а) тему",
-        TdApi.MessageContent.MessageVideoChatStarted => "* начал(а) видеочат",
-        TdApi.MessageContent.MessageVideoChatEnded => "* видеочат завершён",
-        TdApi.MessageContent.MessageGiftedPremium => "[Подарок: Telegram Premium]",
-        TdApi.MessageContent.MessageStory => "[История]",
-        TdApi.MessageContent.MessageGame => "[Игра]",
-        TdApi.MessageContent.MessageInvoice => "[Счёт]",
-        TdApi.MessageContent.MessageExpiredPhoto => "[Фото удалено]",
-        TdApi.MessageContent.MessageExpiredVideo => "[Видео удалено]",
-        TdApi.MessageContent.MessageUnsupported => "[Не поддерживается]",
-        _ => "[Сообщение, которое Aurora пока не умеет показывать]",
+        TdApi.MessageContent.MessageSupergroupChatCreate g => L("* создал(а) группу «{0}»", NoEmoji(g.Title)),
+        TdApi.MessageContent.MessageBasicGroupChatCreate g => L("* создал(а) группу «{0}»", NoEmoji(g.Title)),
+        TdApi.MessageContent.MessageChatUpgradeTo => L("* группа стала супергруппой"),
+        TdApi.MessageContent.MessageChatUpgradeFrom => L("* группа стала супергруппой"),
+        TdApi.MessageContent.MessageScreenshotTaken => L("* сделал(а) скриншот"),
+        TdApi.MessageContent.MessageChatSetMessageAutoDeleteTime => L("* изменил(а) автоудаление сообщений"),
+        TdApi.MessageContent.MessageForumTopicCreated => L("* создал(а) тему"),
+        TdApi.MessageContent.MessageVideoChatStarted => L("* начал(а) видеочат"),
+        TdApi.MessageContent.MessageVideoChatEnded => L("* видеочат завершён"),
+        TdApi.MessageContent.MessageGiftedPremium => L("[Подарок: Telegram Premium]"),
+        TdApi.MessageContent.MessageStory => L("[История]"),
+        TdApi.MessageContent.MessageGame => L("[Игра]"),
+        TdApi.MessageContent.MessageInvoice => L("[Счёт]"),
+        TdApi.MessageContent.MessageExpiredPhoto => L("[Фото удалено]"),
+        TdApi.MessageContent.MessageExpiredVideo => L("[Видео удалено]"),
+        TdApi.MessageContent.MessageUnsupported => L("[Не поддерживается]"),
+        _ => L("[Сообщение, которое Aurora пока не умеет показывать]"),
     };
 
     public static bool IsService(TdApi.MessageContent? c) =>

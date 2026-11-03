@@ -15,6 +15,8 @@ public sealed class Config
     public bool UseSmileys { get; set; } = true;
     /// <summary>"icq" (2003, beige and green) or "aero" (Frutiger Aero glass).</summary>
     public string Skin { get; set; } = "icq";
+    /// <summary>Interface language code; null follows the system language.</summary>
+    public string? Language { get; set; }
     /// <summary>Accent color per skin, "#RRGGBB". Missing means the skin's own default.</summary>
     public Dictionary<string, string> Accents { get; set; } = new();
     public bool NotifyGroups { get; set; } = true;
@@ -23,6 +25,8 @@ public sealed class Config
     public bool UseSystemProxy { get; set; } = true;
     /// <summary>Keep messages other people deleted (and earlier versions of edited ones) in the local archive.</summary>
     public bool KeepDeleted { get; set; } = true;
+    /// <summary>Archive keep period in days, 0 = forever.</summary>
+    public int ArchiveDays { get; set; } = 30;
     public int ListTab { get; set; }
     public double ListLeft { get; set; } = double.NaN;
     public double ListTop { get; set; } = double.NaN;

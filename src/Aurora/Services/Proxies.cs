@@ -27,7 +27,7 @@ public sealed class ProxyEntry : INotifyPropertyChanged
     /// <summary>"120 мс", "нет связи" or empty while not checked.</summary>
     public string Ping { get => _ping; set => Set(ref _ping, value); }
 
-    public string Title => IsSystem ? $"{Server}:{Port} (системный)" : $"{Server}:{Port}";
+    public string Title => IsSystem ? L("{0}:{1} (системный)", Server, Port) : $"{Server}:{Port}";
 
     public TdApi.Proxy ToTd() => new()
     {
@@ -179,19 +179,19 @@ public static class Proxies
 
     public static async Task Ping(ProxyEntry e)
     {
-        e.Ping = "проверка…";
+        e.Ping = L("проверка…");
         if (!Live)
         {
             await Task.Delay(400);
-            e.Ping = $"{80 + e.Port % 90} мс";
+            e.Ping = L("{0} мс", 80 + e.Port % 90);
             return;
         }
         try
         {
             var s = await Tg.Client.ExecuteAsync(new TdApi.PingProxy { Proxy = e.ToTd() }).WaitAsync(TimeSpan.FromSeconds(12));
-            e.Ping = $"{Math.Round((s.Seconds_ ?? 0) * 1000)} мс";
+            e.Ping = L("{0} мс", Math.Round((s.Seconds_ ?? 0) * 1000));
         }
-        catch { e.Ping = "нет связи"; }
+        catch { e.Ping = L("нет связи"); }
     }
 
     public const string SystemTag = "system";

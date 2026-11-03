@@ -19,9 +19,9 @@ public partial class InfoWindow : Window
         DataContext = chat;
         Title = chat.Kind switch
         {
-            ChatKind.Group => "О группе",
-            ChatKind.Channel => "О канале",
-            _ => "Информация о пользователе",
+            ChatKind.Group => L("О группе"),
+            ChatKind.Channel => L("О канале"),
+            _ => L("Информация о пользователе"),
         };
         Icon = Icons.Bitmap(chat.Icon);
         Loaded += async (_, _) => await Fill();
@@ -31,20 +31,20 @@ public partial class InfoWindow : Window
     {
         if (Tg.Users.TryGetValue(_chat.UserId, out var u))
         {
-            Row("Имя:", (u.FirstName + " " + u.LastName).Trim());
+            Row(L("Имя:"), (u.FirstName + " " + u.LastName).Trim());
             var nick = u.Usernames?.ActiveUsernames?.FirstOrDefault();
-            if (nick != null) Row("Ник:", "@" + nick);
-            if (!string.IsNullOrEmpty(u.PhoneNumber)) Row("Телефон:", "+" + u.PhoneNumber);
-            Row("Статус:", _chat.StatusText);
-            Row("В контактах:", u.IsContact ? (u.IsMutualContact ? "да, взаимно" : "да") : "нет");
+            if (nick != null) Row(L("Ник:"), "@" + nick);
+            if (!string.IsNullOrEmpty(u.PhoneNumber)) Row(L("Телефон:"), "+" + u.PhoneNumber);
+            Row(L("Статус:"), _chat.StatusText);
+            Row(L("В контактах:"), u.IsContact ? (u.IsMutualContact ? L("да, взаимно") : L("да")) : L("нет"));
         }
         else
         {
-            Row("Тип:", _chat.Kind == ChatKind.Channel ? "канал" : "группа");
-            Row("Участники:", _chat.StatusText);
+            Row(L("Тип:"), _chat.Kind == ChatKind.Channel ? L("канал") : L("группа"));
+            Row(L("Участники:"), _chat.StatusText);
         }
         var about = await Tg.About(_chat);
-        if (about.Length > 0) Row(_chat.Kind is ChatKind.User or ChatKind.Saved ? "О себе:" : "Описание:", about, smileys: true);
+        if (about.Length > 0) Row(_chat.Kind is ChatKind.User or ChatKind.Saved ? L("О себе:") : L("Описание:"), about, smileys: true);
         Row("ID:", _chat.Id.ToString(), gray: true);
     }
 

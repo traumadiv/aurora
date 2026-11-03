@@ -125,13 +125,36 @@
                     <TextBlock Style="{StaticResource Section}" Text="Контакт-лист" />
                     <CheckBox x:Name="HideOffline" Content="Скрывать контакты не в сети" />
                     <CheckBox x:Name="OnTop" Content="Окно поверх всех окон" />
-                    <CheckBox x:Name="KeepDeleted" Content="Показывать удалённые сообщения и прошлые версии правок" />
-                    <TextBlock Foreground="{DynamicResource Muted}" FontSize="10" Margin="20,-4,0,8" TextWrapping="Wrap"
-                               Text="Aurora хранит копию полученных сообщений у вас на компьютере (%APPDATA%\Aurora\archive). Если собеседник удалит или изменит сообщение, вы всё равно увидите, что там было. Работает для сообщений, полученных, пока Aurora была запущена." />
                     <TextBlock Foreground="{DynamicResource Muted}" FontSize="10" Margin="0,8,0,0" TextWrapping="Wrap">
                         Горячие клавиши: начните печатать в списке, чтобы найти контакт; Ctrl+Tab переключает
                         «Контакты» и «Чаты»; Ctrl+P открывает настройки; Alt+M открывает меню.
                     </TextBlock>
+                </StackPanel>
+
+                <!-- Archive of deleted and edited messages -->
+                <StackPanel x:Name="ArchivePage" Visibility="Collapsed">
+                    <TextBlock Style="{StaticResource Section}" Text="Архив сообщений" />
+                    <CheckBox x:Name="KeepDeleted" Content="Показывать удалённые сообщения и прошлые версии правок" />
+                    <TextBlock Foreground="{DynamicResource Muted}" FontSize="10" Margin="20,-4,0,12" TextWrapping="Wrap"
+                               Text="Aurora хранит копию полученных сообщений у вас на компьютере. Если собеседник удалит или изменит сообщение, вы всё равно увидите, что там было. Работает для сообщений, полученных, пока Aurora была запущена." />
+                    <TextBlock Style="{StaticResource Field}" Text="Автоматически удалять из архива сообщения старше:" />
+                    <ComboBox x:Name="ArchiveDays" Width="160" Height="22" HorizontalAlignment="Left" Margin="0,2,0,4" />
+                    <TextBlock Foreground="{DynamicResource Muted}" FontSize="10" Margin="0,0,0,12" TextWrapping="Wrap"
+                               Text="Удалённое сообщение хранится этот срок с момента удаления. Очистка идёт сама, пока Aurora запущена." />
+                    <TextBlock x:Name="ArchiveUsage" Margin="0,0,0,6" />
+                    <StackPanel Orientation="Horizontal">
+                        <Button Width="150" Height="23" Click="ArchiveCleanNow_Click">Очистить старое</Button>
+                        <Button Width="150" Height="23" Margin="6,0,0,0" Click="ArchiveClear_Click">Удалить весь архив…</Button>
+                        <Button Width="110" Height="23" Margin="6,0,0,0" Click="ArchiveFolder_Click">Папка…</Button>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Language -->
+                <StackPanel x:Name="LangPage" Visibility="Collapsed">
+                    <TextBlock Style="{StaticResource Section}" Text="Язык / Language" />
+                    <StackPanel x:Name="LangList" Margin="0,0,0,10" />
+                    <TextBlock x:Name="LangNote" Foreground="{DynamicResource Muted}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                    <Button x:Name="LangRestart" Width="200" Height="23" HorizontalAlignment="Left" Visibility="Collapsed" Click="LangRestart_Click" />
                 </StackPanel>
 
                 <!-- Smileys -->
