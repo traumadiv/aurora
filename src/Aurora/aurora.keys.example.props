@@ -1,0 +1,10 @@
+<!--
+  Copy to aurora.keys.props (gitignored) and fill in the keys from https://my.telegram.org/apps.
+  They get compiled into Aurora.exe, so people who run your build only enter their phone number.
+-->
+<Project>
+  <PropertyGroup>
+    <AuroraApiId>1234567</AuroraApiId>
+    <AuroraApiHash>0123456789abcdef0123456789abcdef</AuroraApiHash>
+  </PropertyGroup>
+</Project>

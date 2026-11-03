@@ -1,0 +1,86 @@
+<UserControl x:Class="Aurora.Views.ProxyPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <CheckBox DockPanel.Dock="Top" x:Name="UseSystem" Margin="0,0,0,8" Click="UseSystem_Click"
+                  Content="Использовать системный прокси Windows (VPN-клиенты: v2rayN, Hiddify, Clash)" />
+        <!-- paste a link: the common way people get an MTProxy -->
+        <TextBlock DockPanel.Dock="Top" Margin="0,0,0,3" Foreground="{DynamicResource SubText}" TextWrapping="Wrap"
+                   Text="Вставьте ссылку на прокси (tg://proxy, t.me/proxy, tg://socks) и нажмите «Добавить»:" />
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+            <Button DockPanel.Dock="Right" Width="90" Height="23" Margin="6,0,0,0" Click="AddLink_Click">Добавить</Button>
+            <TextBox x:Name="LinkBox" Height="22" VerticalContentAlignment="Center" KeyDown="LinkBox_KeyDown" />
+        </DockPanel>
+
+        <Expander DockPanel.Dock="Top" Header="Ввести вручную" Margin="0,0,0,6" Foreground="{DynamicResource Accent}">
+            <Grid Margin="0,4,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="70" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Тип:" VerticalAlignment="Center" Margin="0,0,6,4" />
+                <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,0,0,4">
+                    <RadioButton x:Name="KindMt" GroupName="pkind" Content="MTProto" IsChecked="True" Margin="0,0,12,0" Checked="Kind_Changed" />
+                    <RadioButton x:Name="KindSocks" GroupName="pkind" Content="SOCKS5" Checked="Kind_Changed" />
+                </StackPanel>
+                <TextBlock Grid.Row="1" Text="Сервер:" VerticalAlignment="Center" Margin="0,0,6,4" />
+                <TextBox Grid.Row="1" Grid.Column="1" x:Name="ServerBox" Height="22" Margin="0,0,0,4" />
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="Порт:" VerticalAlignment="Center" Margin="8,0,6,4" />
+                <TextBox Grid.Row="1" Grid.Column="3" x:Name="PortBox" Height="22" Margin="0,0,0,4" Text="443" />
+                <TextBlock Grid.Row="2" x:Name="SecretLabel" Text="Секрет:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBox Grid.Row="2" Grid.Column="1" x:Name="SecretBox" Height="22" />
+                <TextBox Grid.Row="2" Grid.Column="1" x:Name="UserBox" Height="22" Visibility="Collapsed" ToolTip="Логин (необязательно)" />
+                <TextBlock Grid.Row="2" Grid.Column="2" x:Name="PassLabel" Text="Пароль:" VerticalAlignment="Center" Margin="8,0,6,0" Visibility="Collapsed" />
+                <PasswordBox Grid.Row="2" Grid.Column="3" x:Name="PassBox" Height="22" Visibility="Collapsed" ToolTip="Пароль" />
+                <Button Grid.Row="3" Grid.Column="3" x:Name="AddManualBtn" Height="23" Margin="0,6,0,0" Click="AddManual_Click">Добавить</Button>
+            </Grid>
+        </Expander>
+
+        <StackPanel DockPanel.Dock="Bottom">
+            <WrapPanel Margin="0,6,0,0">
+                <Button Height="23" Padding="9,1" Margin="0,0,5,4" Click="Use_Click" x:Name="UseBtn">Подключить</Button>
+                <Button Height="23" Padding="9,1" Margin="0,0,5,4" Click="Off_Click">Без прокси</Button>
+                <Button Height="23" Padding="9,1" Margin="0,0,5,4" Click="Ping_Click">Проверить</Button>
+                <Button Height="23" Padding="9,1" Margin="0,0,5,4" Click="Copy_Click">Копировать</Button>
+                <Button Height="23" Padding="9,1" Margin="0,0,5,4" Click="Remove_Click">Удалить</Button>
+            </WrapPanel>
+            <TextBlock x:Name="Status" Foreground="{DynamicResource Typing}" TextWrapping="Wrap" Margin="0,2,0,0" />
+        </StackPanel>
+
+        <ListBox x:Name="ListView" MinHeight="70" ItemContainerStyle="{StaticResource GlassItem}" Background="{DynamicResource Sheet}" BorderBrush="{DynamicResource Frame}"
+                 HorizontalContentAlignment="Stretch" MouseDoubleClick="List_DoubleClick"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <DockPanel Margin="2,3">
+                        <Image x:Name="dot" Width="16" Height="16" Margin="0,0,6,0" DockPanel.Dock="Left"
+                               Source="{Binding Source=offline, Converter={StaticResource Icon}}" />
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Ping}" Opacity="0.7" Margin="8,0,2,0"
+                                   VerticalAlignment="Center" />
+                        <StackPanel>
+                            <TextBlock x:Name="title" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                            <TextBlock FontSize="10" Opacity="0.7">
+                                <Run Text="{Binding Kind, Mode=OneWay}" /><Run x:Name="on" Text="" />
+                            </TextBlock>
+                        </StackPanel>
+                    </DockPanel>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Enabled}" Value="True">
+                            <Setter TargetName="dot" Property="Source" Value="{Binding Source=online, Converter={StaticResource Icon}}" />
+                            <Setter TargetName="title" Property="FontWeight" Value="Bold" />
+                            <Setter TargetName="on" Property="Text" Value=" · используется" />
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

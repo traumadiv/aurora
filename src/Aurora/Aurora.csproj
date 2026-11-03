@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <TieredPGO>true</TieredPGO>
+    <TieredCompilationQuickStartupJit>true</TieredCompilationQuickStartupJit>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <AssemblyName>Aurora</AssemblyName>
+    <ApplicationIcon>aurora.ico</ApplicationIcon>
+    <Version>0.1.0</Version>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <!-- dotnet publish: one Aurora.exe that runs on a clean Windows 10/11, no .NET install needed -->
+  <PropertyGroup Condition="'$(_IsPublishing)' == 'true'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <DebugType>none</DebugType>
+    <SatelliteResourceLanguages>ru;en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WinForms is only for the tray icon; keep its namespaces out of the global usings -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <!--
+    Telegram API keys are baked in at build time, so users only log in with a phone number.
+    Put them in aurora.keys.props next to this file (gitignored, see aurora.keys.example.props)
+    or pass AURORA_API_ID / AURORA_API_HASH as environment variables (CI).
+  -->
+  <Import Project="aurora.keys.props" Condition="Exists('aurora.keys.props')" />
+  <PropertyGroup>
+    <AuroraApiId Condition="'$(AuroraApiId)' == ''">$(AURORA_API_ID)</AuroraApiId>
+    <AuroraApiHash Condition="'$(AuroraApiHash)' == ''">$(AURORA_API_HASH)</AuroraApiHash>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>AuroraApiId</_Parameter1>
+      <_Parameter2>$(AuroraApiId)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>AuroraApiHash</_Parameter1>
+      <_Parameter2>$(AuroraApiHash)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\message.mp3" LogicalName="Aurora.message.mp3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TdLib" Version="1.8.67" />
+    <PackageReference Include="tdlib.native.win-x64" Version="1.8.67" />
+  </ItemGroup>
+
+</Project>

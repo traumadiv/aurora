@@ -1,0 +1,36 @@
+<Window x:Class="Aurora.Views.InfoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:s="clr-namespace:Aurora.Services"
+        Width="340" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" Style="{StaticResource XpWindow}">
+    <DockPanel Margin="8">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button x:Name="WriteBtn" Width="100" Height="23" IsDefault="True" Click="Write_Click">Написать</Button>
+            <Button Width="80" Height="23" Margin="6,0,0,0" IsCancel="True">Закрыть</Button>
+        </StackPanel>
+
+        <Border Background="{DynamicResource Sheet}" CornerRadius="{DynamicResource SheetRadius}" BorderBrush="{DynamicResource Frame}" BorderThickness="1">
+            <StackPanel>
+                <!-- Banner -->
+                <Border Padding="12,10">
+                    <Border.Background><DynamicResource ResourceKey="HeaderSide" /></Border.Background>
+                    <DockPanel>
+                        <Image Source="{Binding Icon, Converter={StaticResource Icon}}" Width="32" Height="32" Margin="0,0,10,0" />
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource SubText}" />
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <Grid x:Name="Fields" Margin="12,8,12,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </DockPanel>
+</Window>

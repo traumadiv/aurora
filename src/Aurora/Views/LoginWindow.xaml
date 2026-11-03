@@ -1,0 +1,73 @@
+<Window x:Class="Aurora.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Aurora — вход" Width="460" Height="330" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" Style="{StaticResource XpWindow}">
+    <DockPanel>
+        <!-- Wizard-style footer -->
+        <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Padding="10,8">
+            <DockPanel LastChildFill="False">
+                <TextBlock x:Name="Busy" DockPanel.Dock="Left" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" />
+                <Button x:Name="NextBtn" DockPanel.Dock="Right" Width="88" Height="23" IsDefault="True" Click="Next_Click">Далее &gt;</Button>
+                <Button x:Name="BackBtn" DockPanel.Dock="Right" Width="88" Height="23" Margin="0,0,6,0" Click="Back_Click"
+                        Visibility="Collapsed">&lt; Назад</Button>
+            </DockPanel>
+        </Border>
+
+        <!-- Left banner -->
+        <Border DockPanel.Dock="Left" Width="130">
+            <Border.Background><DynamicResource ResourceKey="Banner" /></Border.Background>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Image x:Name="Logo" Width="72" Height="72" />
+                <TextBlock Text="Aurora" Foreground="White" FontFamily="Trebuchet MS" FontSize="24" FontWeight="Bold"
+                           HorizontalAlignment="Center" Margin="0,8,0,0" />
+                <TextBlock Text="Telegram, как в старые добрые" Foreground="{DynamicResource BannerText}" HorizontalAlignment="Center"
+                           FontSize="11" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="112" Margin="0,2,0,0" />
+            </StackPanel>
+        </Border>
+
+        <Grid Background="{DynamicResource Sheet}">
+            <StackPanel Margin="18,16,18,10">
+                <TextBlock x:Name="Heading" FontWeight="Bold" FontSize="13" Margin="0,0,0,6" />
+                <TextBlock x:Name="Hint" TextWrapping="Wrap" Foreground="{DynamicResource Ink}" Margin="0,0,0,12" />
+
+                <!-- step: phone -->
+                <StackPanel x:Name="PhoneStep" Visibility="Collapsed">
+                    <TextBlock Text="Номер телефона:" />
+                    <TextBox x:Name="Phone" Margin="0,2,0,0" Height="24" FontSize="14" Text="+7 "
+                             PreviewTextInput="Phone_PreviewTextInput" />
+                </StackPanel>
+
+                <!-- step: code -->
+                <StackPanel x:Name="CodeStep" Visibility="Collapsed">
+                    <TextBlock Text="Код:" />
+                    <TextBox x:Name="Code" Margin="0,2,0,8" Height="26" Width="130" HorizontalAlignment="Left"
+                             FontSize="16" FontFamily="Consolas" TextChanged="Code_TextChanged" />
+                    <TextBlock>
+                        <Hyperlink x:Name="ResendLink" Click="Resend_Click"><Run x:Name="ResendText" /></Hyperlink>
+                    </TextBlock>
+                    <TextBlock x:Name="ResendTimer" Foreground="{DynamicResource Muted}" />
+                </StackPanel>
+
+                <!-- step: 2FA -->
+                <StackPanel x:Name="PassStep" Visibility="Collapsed">
+                    <TextBlock Text="Облачный пароль:" />
+                    <PasswordBox x:Name="Pass" Margin="0,2,0,0" Height="24" FontSize="14" />
+                </StackPanel>
+
+                <!-- fallback step: only for builds made without baked-in keys -->
+                <StackPanel x:Name="ApiStep" Visibility="Collapsed">
+                    <TextBlock Text="api_id:" />
+                    <TextBox x:Name="ApiId" Margin="0,2,0,8" Height="21" />
+                    <TextBlock Text="api_hash:" />
+                    <TextBox x:Name="ApiHash" Margin="0,2,0,8" Height="21" />
+                    <TextBlock>
+                        <Hyperlink NavigateUri="https://my.telegram.org/apps" RequestNavigate="Link_Click">Получить ключи на my.telegram.org</Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+
+                <TextBlock x:Name="Error" Foreground="{DynamicResource Danger}" TextWrapping="Wrap" Margin="0,10,0,0" />
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

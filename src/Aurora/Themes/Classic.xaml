@@ -1,0 +1,218 @@
+<!--
+  Shared templates. Every color, font and decoration comes from the active skin
+  (Skin.Icq.xaml or Skin.Aero.xaml) through DynamicResource, so skins switch live.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:Aurora.Services">
+
+    <s:IconConverter x:Key="Icon" />
+    <BooleanToVisibilityConverter x:Key="Vis" />
+
+    <!-- Caption buttons -->
+    <Style x:Key="CapButton" TargetType="Button">
+        <Setter Property="Width" Value="{DynamicResource CapWidth}" />
+        <Setter Property="Height" Value="21" />
+        <Setter Property="Margin" Value="2,0,0,0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="b" CornerRadius="{DynamicResource CapRadius}" BorderBrush="{DynamicResource CapBorder}"
+                            BorderThickness="1" Background="{DynamicResource CapBtn}">
+                        <Grid>
+                            <Border x:Name="gloss" CornerRadius="{DynamicResource CapRadius}" Background="{DynamicResource CapGloss}"
+                                    Height="9" VerticalAlignment="Top" Margin="1,1,1,0" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource CapBtnHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource CapBtnPressed}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CapClose" TargetType="Button" BasedOn="{StaticResource CapButton}">
+        <Setter Property="Width" Value="{DynamicResource CapCloseWidth}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="b" CornerRadius="{DynamicResource CapRadius}" BorderBrush="{DynamicResource CapBorder}"
+                            BorderThickness="1" Background="{DynamicResource CapCloseBg}">
+                        <Grid>
+                            <Border CornerRadius="{DynamicResource CapRadius}" Background="{DynamicResource CapGloss}"
+                                    Height="9" VerticalAlignment="Top" Margin="1,1,1,0" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource CapCloseBgHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource CapCloseBgPressed}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Window frame drawn by us (WindowChrome keeps native snap/resize) -->
+    <Style x:Key="XpWindow" TargetType="Window">
+        <Setter Property="FontFamily" Value="{DynamicResource UiFont}" />
+        <Setter Property="FontSize" Value="{DynamicResource UiFontSize}" />
+        <Setter Property="Background" Value="{DynamicResource Face}" />
+        <Setter Property="Foreground" Value="{DynamicResource Ink}" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="WindowChrome.WindowChrome">
+            <Setter.Value>
+                <WindowChrome CaptionHeight="25" ResizeBorderThickness="5" GlassFrameThickness="0"
+                              CornerRadius="0" UseAeroCaptionButtons="False" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Window">
+                    <Border x:Name="frame" BorderThickness="{DynamicResource FrameThickness}" BorderBrush="{DynamicResource FrameActive}"
+                            Background="{TemplateBinding Background}">
+                        <DockPanel>
+                            <Border x:Name="cap" DockPanel.Dock="Top" Height="27" Margin="{DynamicResource CaptionMargin}"
+                                    CornerRadius="{DynamicResource CaptionRadius}" Background="{DynamicResource CaptionActive}">
+                                <Grid>
+                                    <!-- Glass sheen over the top half of the caption (transparent in the ICQ skin) -->
+                                    <Border CornerRadius="{DynamicResource CaptionRadius}" Background="{DynamicResource CaptionSheen}"
+                                            Height="13" VerticalAlignment="Top" IsHitTestVisible="False" />
+                                    <!-- bright glass edge along the bottom of the caption -->
+                                    <Border Height="1" VerticalAlignment="Bottom" Background="{DynamicResource CaptionEdge}" IsHitTestVisible="False" />
+                                    <DockPanel Margin="6,0,5,0">
+                                        <Image DockPanel.Dock="Left" Width="16" Height="16" Margin="0,0,5,0"
+                                               Source="{TemplateBinding Icon}" RenderOptions.BitmapScalingMode="HighQuality" />
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Style="{StaticResource CapButton}" Command="{x:Static SystemCommands.MinimizeWindowCommand}" ToolTip="Свернуть">
+                                                <Rectangle Width="7" Height="3" Fill="{DynamicResource CapGlyph}" Margin="0,7,0,0" />
+                                            </Button>
+                                            <Button Style="{StaticResource CapClose}" Command="{x:Static SystemCommands.CloseWindowCommand}" ToolTip="Закрыть">
+                                                <Path Data="M0,0 L8,8 M8,0 L0,8" Stroke="{DynamicResource CapGlyph}" StrokeThickness="2" />
+                                            </Button>
+                                        </StackPanel>
+                                        <TextBlock x:Name="title" Text="{TemplateBinding Title}" Foreground="{DynamicResource CaptionFore}"
+                                                   FontFamily="{DynamicResource CaptionFont}" FontWeight="{DynamicResource CaptionWeight}"
+                                                   FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect ShadowDepth="{DynamicResource CaptionShadowDepth}" BlurRadius="{DynamicResource CaptionShadowBlur}"
+                                                                  Opacity="0.8" Color="{DynamicResource CaptionShadow}" />
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </DockPanel>
+                                </Grid>
+                            </Border>
+                            <!-- Body: skin decoration (bubbles, light) under the content -->
+                            <Grid>
+                                <Rectangle Fill="{DynamicResource Decor}" IsHitTestVisible="False" />
+                                <!-- slow drifting layer (bubbles, stars); 12 fps is plenty for a 20 s drift -->
+                                <Rectangle Fill="{DynamicResource DecorFloat}" Visibility="{DynamicResource DecorFloatVis}" IsHitTestVisible="False" Margin="0,-30,0,-30">
+                                    <Rectangle.RenderTransform><TranslateTransform /></Rectangle.RenderTransform>
+                                    <Rectangle.Triggers>
+                                        <EventTrigger RoutedEvent="Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard Timeline.DesiredFrameRate="12">
+                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="14" To="-14"
+                                                                     Duration="0:0:22" AutoReverse="True" RepeatBehavior="Forever">
+                                                        <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+                                                    </DoubleAnimation>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" From="-5" To="5"
+                                                                     Duration="0:0:31" AutoReverse="True" RepeatBehavior="Forever">
+                                                        <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+                                                    </DoubleAnimation>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Rectangle.Triggers>
+                                </Rectangle>
+                                <!-- inner light line just inside the frame -->
+                                <Border BorderThickness="1" BorderBrush="{DynamicResource FrameInner}" IsHitTestVisible="False" />
+                                <AdornerDecorator>
+                                    <ContentPresenter />
+                                </AdornerDecorator>
+                            </Grid>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsActive" Value="False">
+                            <Setter TargetName="cap" Property="Background" Value="{DynamicResource CaptionInactive}" />
+                            <Setter TargetName="frame" Property="BorderBrush" Value="{DynamicResource FrameInactive}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Flat "toolbar" button used at the bottom of the contact list -->
+    <Style x:Key="ToolButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Padding" Value="6,3" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="b" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1" CornerRadius="{DynamicResource ToolRadius}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource ToolHover}" />
+                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource ToolHoverBorder}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource ToolPressed}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- List row with the skin's hover and selection: settings sections, proxies -->
+    <Style x:Key="GlassItem" TargetType="ListBoxItem">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="b" Margin="2,1" Padding="3,1" CornerRadius="{DynamicResource RowRadius}" BorderThickness="1"
+                            BorderBrush="Transparent" Background="Transparent">
+                        <ContentPresenter />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource Hover}" />
+                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource HoverBorder}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource Selected}" />
+                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource SelectedBorder}" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Links in chats and dialogs follow the skin -->
+    <Style TargetType="Hyperlink">
+        <Setter Property="Foreground" Value="{DynamicResource LinkInk}" />
+    </Style>
+</ResourceDictionary>

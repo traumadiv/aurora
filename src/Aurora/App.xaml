@@ -1,0 +1,16 @@
+﻿<Application x:Class="Aurora.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Real XP Luna controls (buttons, scrollbars, text boxes) ship with WPF itself -->
+                <ResourceDictionary Source="/PresentationFramework.Luna;component/themes/luna.normalcolor.xaml" />
+                <!-- Slot 1 is the active skin; App.ApplySkin swaps it at runtime -->
+                <ResourceDictionary Source="Themes/Skin.Icq.xaml" />
+                <ResourceDictionary Source="Themes/Classic.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

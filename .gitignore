@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+*.user
+publish/
+dist/
+# never commit Telegram API keys or session data
+config.json
+aurora.keys.props
+td/

@@ -1,0 +1,90 @@
+<!-- Skin "ICQ 2003": beige XP face, green accents. Keys are shared with Skin.Msn.xaml. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!-- Fonts: XP defaults -->
+    <FontFamily x:Key="UiFont">Tahoma</FontFamily>
+    <sys:Double x:Key="UiFontSize">11</sys:Double>
+    <FontFamily x:Key="CaptionFont">Trebuchet MS</FontFamily>
+    <FontWeight x:Key="CaptionWeight">Bold</FontWeight>
+
+    <!-- Luna window frame -->
+    <LinearGradientBrush x:Key="CaptionActive" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#3D95FF" />
+        <GradientStop Offset="0.09" Color="#0A62F0" />
+        <GradientStop Offset="0.45" Color="#0055EA" />
+        <GradientStop Offset="0.9" Color="#0046D8" />
+        <GradientStop Offset="1" Color="#0038C2" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="CaptionInactive" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#A9C3F2" />
+        <GradientStop Offset="0.1" Color="#8EAAEA" />
+        <GradientStop Offset="1" Color="#7896DE" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="CaptionSheen" Color="Transparent" />
+    <SolidColorBrush x:Key="CaptionFore" Color="White" />
+    <Color x:Key="CaptionShadow">#0A1E6E</Color>
+    <sys:Double x:Key="CaptionShadowDepth">1</sys:Double>
+    <sys:Double x:Key="CaptionShadowBlur">0</sys:Double>
+    <CornerRadius x:Key="CaptionRadius">7,7,0,0</CornerRadius>
+    <Thickness x:Key="CaptionMargin">-3,0,-3,0</Thickness>
+    <Thickness x:Key="FrameThickness">3,0,3,3</Thickness>
+    <SolidColorBrush x:Key="FrameActive" Color="#0831D9" />
+    <SolidColorBrush x:Key="FrameInactive" Color="#7A96DF" />
+    <SolidColorBrush x:Key="Decor" Color="Transparent" />
+
+    <!-- Caption buttons -->
+    <sys:Double x:Key="CapWidth">21</sys:Double>
+    <sys:Double x:Key="CapCloseWidth">21</sys:Double>
+    <CornerRadius x:Key="CapRadius">3</CornerRadius>
+    <CornerRadius x:Key="ToolRadius">2</CornerRadius>
+    <SolidColorBrush x:Key="CapBorder" Color="White" />
+    <SolidColorBrush x:Key="CapGloss" Color="Transparent" />
+    <LinearGradientBrush x:Key="CapBtn" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#4C8DFF" />
+        <GradientStop Offset="1" Color="#1050E0" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="CapBtnHover" Color="#5EA0FF" />
+    <SolidColorBrush x:Key="CapBtnPressed" Color="#0A3DB8" />
+    <LinearGradientBrush x:Key="CapCloseBg" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#F08A6E" />
+        <GradientStop Offset="1" Color="#C8381A" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="CapCloseBgHover" Color="#F4A089" />
+    <SolidColorBrush x:Key="CapCloseBgPressed" Color="#A82A10" />
+
+    <SolidColorBrush x:Key="Face" Color="#ECE9D8" />
+    <SolidColorBrush x:Key="Line" Color="#ACA899" />
+    <SolidColorBrush x:Key="Frame" Color="#7F9DB9" />
+    <SolidColorBrush x:Key="Accent" Color="#2B5016" />
+    <SolidColorBrush x:Key="AccentSoft" Color="#6E8A5C" />
+    <SolidColorBrush x:Key="Arrow" Color="#3B6E22" />
+    <SolidColorBrush x:Key="SubText" Color="#5A6B4F" />
+    <SolidColorBrush x:Key="Hover" Color="#EEF5E6" />
+    <SolidColorBrush x:Key="Selected" Color="#316AC5" />
+    <SolidColorBrush x:Key="Badge" Color="#3D9A3F" />
+    <SolidColorBrush x:Key="BadgeBorder" Color="#2B7A2E" />
+    <SolidColorBrush x:Key="Typing" Color="#2E7D32" />
+    <SolidColorBrush x:Key="TypingBg" Color="#F1F7EC" />
+    <SolidColorBrush x:Key="Toolbar" Color="#F4F2E8" />
+    <SolidColorBrush x:Key="Heading" Color="#1F4E8C" />
+    <SolidColorBrush x:Key="BannerText" Color="#CDEFCF" />
+    <SolidColorBrush x:Key="ToolHover" Color="#FFF8E5" />
+    <SolidColorBrush x:Key="ToolHoverBorder" Color="#E5A43A" />
+    <SolidColorBrush x:Key="ToolPressed" Color="#F7D99B" />
+    <LinearGradientBrush x:Key="Header" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#FFFFFF" />
+        <GradientStop Offset="1" Color="#E3EFD9" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="HeaderSide" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Offset="0" Color="#E3EFD9" />
+        <GradientStop Offset="1" Color="#FFFFFF" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Banner" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#2F9E36" />
+        <GradientStop Offset="1" Color="#0E5E1A" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="ListBack" Color="White" />
+    <SolidColorBrush x:Key="PanelBack" Color="White" />
+    <SolidColorBrush x:Key="ChatBack" Color="White" />
+</ResourceDictionary>
